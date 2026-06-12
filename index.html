@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Letterz · Kneuralabs Letter Studio</title>
+<meta name="description" content="Letterz — Kneuralabs Letter & Contract Studio. Compose contracts, offer letters, NDAs and invoices with a live A4 preview, print-perfect PDF and one-click send.">
+<meta name="theme-color" content="#12182a">
+<link rel="icon" type="image/png" href="LOGO.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -21,16 +24,20 @@
   --muted:#8892aa;
   --line: #e4e7ef;
   --paper:#fefefe;
-  --radius: 12px;
-  --sh:   0 1px 4px rgba(18,24,42,.07), 0 4px 16px rgba(18,24,42,.06);
-  --sh-lg:0 4px 8px rgba(18,24,42,.06), 0 16px 48px rgba(18,24,42,.12);
+  --radius: 14px;
+  --sh:   0 1px 2px rgba(18,24,42,.05), 0 4px 12px rgba(18,24,42,.05), 0 12px 32px rgba(18,24,42,.05);
+  --sh-lg:0 4px 8px rgba(18,24,42,.06), 0 16px 48px rgba(18,24,42,.14), 0 32px 80px rgba(18,24,42,.08);
 }
 
 /* ── reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  background: var(--bg);
+  background:
+    radial-gradient(1100px 520px at 85% -8%, rgba(30,87,164,.10) 0%, transparent 62%),
+    radial-gradient(900px 480px at -8% 108%, rgba(192,57,43,.05) 0%, transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--ink);
   min-height: 100vh;
   display: flex;
@@ -41,11 +48,18 @@ body {
 /* ── scrollbars ── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--line); border-radius: 99px; }
+::-webkit-scrollbar-thumb { background: #cdd4e4; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+::selection { background: var(--blue-md); }
 
 /* ──────────────────── HEADER ──────────────────── */
 .app-header {
-  background: var(--ink);
+  background: linear-gradient(180deg, #1a2138 0%, var(--ink) 100%);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  box-shadow: 0 1px 0 rgba(18,24,42,.2), 0 4px 20px rgba(18,24,42,.18);
+  position: sticky;
+  top: 0;
+  z-index: 100;
   height: 54px;
   display: flex;
   align-items: center;
@@ -66,6 +80,7 @@ body {
   overflow: hidden;
   flex-shrink: 0;
   background: #fff;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.14), 0 2px 8px rgba(0,0,0,.35);
 }
 .brand-mark img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .brand-name {
@@ -125,7 +140,11 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  animation: rise .45s cubic-bezier(.22,.8,.36,1) both;
 }
+.preview-panel { animation-delay: .08s; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
 /* ──────────────────── EDITOR PANEL ──────────────────── */
 .editor-cap {
@@ -216,6 +235,7 @@ select {
   background-position: right .75rem center;
   padding-right: 2rem;
 }
+select:hover, input:hover { border-color: #c9d2e6; }
 select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-lt); outline: none; }
 
 .rich-input {
@@ -232,6 +252,7 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
   color: var(--ink);
   transition: border-color .15s, box-shadow .15s;
 }
+.rich-input:hover { border-color: #c9d2e6; }
 .rich-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-lt); }
 .rich-input[style*="min-height:80px"], .rich-input[style*="min-height: 80px"] { min-height: 80px; }
 
@@ -266,7 +287,8 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 /* ── tip ── */
 .tip {
   background: var(--blue-lt);
-  border-radius: 8px;
+  border-left: 3px solid var(--blue);
+  border-radius: 4px 8px 8px 4px;
   padding: .55rem .8rem;
   font-size: .73rem;
   color: var(--ink2);
@@ -307,10 +329,21 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
   flex-shrink: 0;
 }
 .btn .ico { width: 14px; height: 14px; flex-shrink: 0; }
-.btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
-.btn-primary:hover { background: #1a4f96; border-color: #1a4f96; }
-.btn-secondary { background: var(--surface); color: var(--ink2); border-color: var(--line); }
-.btn-secondary:hover { background: var(--blue-lt); color: var(--blue); border-color: var(--blue-md); }
+.btn-primary {
+  background: linear-gradient(180deg, #2a66ba 0%, var(--blue) 100%);
+  color: #fff;
+  border-color: var(--blue);
+  box-shadow: 0 1px 2px rgba(18,24,42,.18), 0 4px 12px rgba(30,87,164,.28), inset 0 1px 0 rgba(255,255,255,.16);
+}
+.btn-primary:hover {
+  background: linear-gradient(180deg, #2f70ca 0%, #2160b3 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(18,24,42,.18), 0 8px 20px rgba(30,87,164,.34), inset 0 1px 0 rgba(255,255,255,.16);
+}
+.btn-primary:active { transform: translateY(0); box-shadow: 0 1px 2px rgba(18,24,42,.2); }
+.btn-secondary { background: var(--surface); color: var(--ink2); border-color: var(--line); box-shadow: 0 1px 2px rgba(18,24,42,.05); }
+.btn-secondary:hover { background: var(--blue-lt); color: var(--blue); border-color: var(--blue-md); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(30,87,164,.14); }
+.btn-secondary:active { transform: translateY(0); }
 .btn-full { flex: 1; }
 
 /* ──────────────────── PREVIEW PANEL ──────────────────── */
@@ -347,6 +380,7 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
   width: 6px; height: 6px;
   border-radius: 50%;
   background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34,197,94,.18);
   flex-shrink: 0;
   animation: blink 2s ease-in-out infinite;
 }
@@ -367,6 +401,11 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  transition: box-shadow .25s ease, transform .25s ease;
+}
+.letter-paper:hover {
+  box-shadow: var(--sh-lg), 0 0 0 1px rgba(18,24,42,.04), 0 24px 64px rgba(18,24,42,.16);
+  transform: translateY(-2px);
 }
 .letter-stripe {
   height: 3px;
