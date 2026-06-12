@@ -814,18 +814,14 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 
   /* ── logo: preload as data URL (used in letterhead + print) ──── */
   let logoDataUrl = 'LOGO.png';
-  (function preloadLogo() {
-    const img = new Image();
-    img.onload = () => {
-      try {
-        const c = document.createElement('canvas');
-        c.width = img.width; c.height = img.height;
-        c.getContext('2d').drawImage(img, 0, 0);
-        logoDataUrl = c.toDataURL('image/png');
-      } catch (e) { /* tainted canvas — fall back to the file path */ }
-    };
-    img.src = 'LOGO.png';
-  })();
+  fetch('LOGO.png')
+    .then(r => r.blob())
+    .then(blob => {
+      const reader = new FileReader();
+      reader.onload = () => { logoDataUrl = reader.result; updatePreview(); };
+      reader.readAsDataURL(blob);
+    })
+    .catch(() => {});
 
   /* ── editor: rich-text formatting toolbar ────────────────────── */
   let activeEditable = null;
