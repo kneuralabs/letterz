@@ -419,55 +419,55 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
   min-height: 0;
 }
 
-/* letterhead — ultra minimal */
+/* letterhead — ultra-minimal Scandinavian: 2-col grid, identity dominant */
 .letterhead {
-  margin-bottom: 2.5rem;
+  margin-bottom: 2.75rem;
   white-space: normal;
 }
 .lh-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: .55rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 1.25rem;
+  margin-bottom: .9rem;
 }
 .lh-ident {
   display: flex;
   align-items: center;
-  gap: .45rem;
+  gap: .6rem;
 }
 .lh-mark {
-  width: 14px;
-  height: 14px;
-  border-radius: 2px;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
   display: block;
   flex-shrink: 0;
 }
 .lh-name {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: .58rem;
+  font-size: 1.02rem;
   font-weight: 800;
-  letter-spacing: .32em;
+  letter-spacing: .24em;
   color: var(--ink);
   text-transform: uppercase;
 }
 .lh-contact {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: .56rem;
+  font-size: .5rem;
   color: var(--muted);
-  letter-spacing: .02em;
-  line-height: 1.7;
+  letter-spacing: .03em;
+  line-height: 1.9;
   text-align: right;
   font-style: normal;
 }
 .lh-contact b { color: var(--ink); font-weight: 700; }
 .lh-rule {
-  height: .5px;
-  background: var(--ink);
+  height: 1px;
+  background: var(--line);
   border: none;
   margin: 0;
   width: 100%;
   display: block;
-  opacity: .6;
 }
 
 /* letter body */
@@ -1053,22 +1053,24 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     win.document.write(`<!DOCTYPE html><html><head><title>Kneuralabs Letter</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-  /* Proportionally identical to the on-screen A4 preview (scale 210mm/500px). */
+  /* WYSIWYG clone of the on-screen preview: identical px CSS, scaled
+     from the 500px-wide preview paper to 210mm A4 via a single zoom. */
   @page{size:A4;margin:0;}
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .letter-stripe{height:1.26mm;background:linear-gradient(90deg,#1e57a4 0%,#1e57a4 62%,#c0392b 62%);}
-  .letter-inner{padding:18.5mm 20.2mm 16.8mm;}
-  .letterhead{margin-bottom:16.8mm;white-space:normal;break-inside:avoid;}
-  .lh-row{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:3.7mm;}
-  .lh-ident{display:flex;align-items:center;gap:3mm;}
-  .lh-mark{width:5.9mm;height:5.9mm;border-radius:.8mm;display:block;flex-shrink:0;}
-  .lh-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:11pt;font-weight:800;letter-spacing:.32em;color:#12182a;text-transform:uppercase;}
-  .lh-contact{font-family:'Plus Jakarta Sans',sans-serif;font-size:10.5pt;color:#8892aa;letter-spacing:.02em;line-height:1.7;text-align:right;font-style:normal;}
+  html{font-size:16px;}
+  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#fff;width:500px;zoom:1.5874;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .letter-stripe{height:3px;background:linear-gradient(90deg,#1e57a4 0%,#1e57a4 62%,#c0392b 62%);}
+  .letter-inner{padding:2.75rem 3rem 2.5rem;}
+  .letterhead{margin-bottom:2.75rem;white-space:normal;break-inside:avoid;}
+  .lh-row{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:1.25rem;margin-bottom:.9rem;}
+  .lh-ident{display:flex;align-items:center;gap:.6rem;}
+  .lh-mark{width:30px;height:30px;border-radius:6px;display:block;flex-shrink:0;}
+  .lh-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.02rem;font-weight:800;letter-spacing:.24em;color:#12182a;text-transform:uppercase;}
+  .lh-contact{font-family:'Plus Jakarta Sans',sans-serif;font-size:.5rem;color:#8892aa;letter-spacing:.03em;line-height:1.9;text-align:right;font-style:normal;}
   .lh-contact b{color:#12182a;font-weight:700;}
-  .lh-rule{height:.21mm;background:#12182a;border:none;opacity:.6;display:block;}
-  .letter-content-display{font-family:'EB Garamond',Georgia,serif;line-height:1.85;font-size:20pt;color:#1a1e30;white-space:normal;}
-  .letter-footer{margin-top:16.8mm;padding-top:5pt;border-top:.5pt solid #e4e7ef;font-family:'Plus Jakarta Sans',sans-serif;font-size:11pt;color:#8892aa;text-align:center;letter-spacing:.04em;break-inside:avoid;}
+  .lh-rule{height:1px;background:#e4e7ef;border:none;display:block;width:100%;}
+  .letter-content-display{font-family:'EB Garamond',Georgia,serif;line-height:1.85;font-size:1.05rem;color:#1a1e30;white-space:normal;}
+  .letter-footer{margin-top:2.5rem;padding-top:.75rem;border-top:1px solid #e4e7ef;font-family:'Plus Jakarta Sans',sans-serif;font-size:.6rem;color:#8892aa;text-align:center;letter-spacing:.04em;break-inside:avoid;}
   strong{font-weight:700;}
 </style></head><body><div class="letter-stripe"></div><div class="letter-inner">${content}</div></body></html>`);
     win.document.close();
