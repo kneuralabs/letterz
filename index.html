@@ -581,7 +581,6 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
   .brand-sub, .brand-pipe { display: none; }
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -760,16 +759,11 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
         <div class="fgrp"><label>Password</label><input type="password" id="smtpPass" placeholder="••••••••"></div>
       </div>
 
-      <div class="modal-sec">In-App Sending via EmailJS (optional)</div>
-      <div class="fgrp"><label>Public Key</label><input type="text" id="emailjsPublicKey" placeholder="user_xxxx"></div>
-      <div class="frow">
-        <div class="fgrp"><label>Service ID</label><input type="text" id="emailjsServiceId" placeholder="service_xxx"></div>
-        <div class="fgrp"><label>Template ID</label><input type="text" id="emailjsTemplateId" placeholder="template_xxx"></div>
-      </div>
+      <div class="modal-sec">Sending</div>
       <div class="fgrp"><label>Default Sender</label><input type="email" id="defaultSenderEmail" placeholder="hr@kneuralabs.com" value="hr@kneuralabs.com"></div>
     </div>
     <div class="modal-ftr">
-      <p>Without EmailJS, "Send" opens your default mail client via mailto: using the SMTP username as the sender.</p>
+      <p>"Send" opens your default mail client via mailto:, CC'ing the SMTP username or default sender.</p>
       <button id="saveEmailConfigBtn" class="btn btn-primary">Save Settings</button>
     </div>
   </div>
@@ -1096,24 +1090,19 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
 
   /* ── mail: config persistence + sending ──────────────────────── */
   // NOTE: IMAP/SMTP credentials cannot be used directly from a browser;
-  // they are retained only as display/config values. Sending happens via
-  // EmailJS when configured, otherwise it falls back to a mailto: link.
+  // they are retained only as display/config values. Sending opens the
+  // user's mail client via a mailto: link.
   // Persisted in localStorage in plaintext — do not store real secrets.
   const STORAGE_KEY = 'kneuralabs_mail_config';
   let mailConfig = {
     imapHost: 'imap.secureserver.net', imapUser: '', imapPass: '',
     smtpHost: 'smtpout.secureserver.net', smtpUser: '', smtpPass: '',
-    publicKey: '', serviceId: '', templateId: '', defaultFrom: 'hr@kneuralabs.com'
+    defaultFrom: 'hr@kneuralabs.com'
   };
   // Map of DOM input id -> mailConfig key (id used directly when absent).
-  const cfgIds = ['imapHost', 'imapUser', 'imapPass', 'smtpHost', 'smtpUser', 'smtpPass',
-                  'emailjsPublicKey', 'emailjsServiceId', 'emailjsTemplateId', 'defaultSenderEmail'];
-  const cfgKeyMap = { emailjsPublicKey: 'publicKey', emailjsServiceId: 'serviceId', emailjsTemplateId: 'templateId', defaultSenderEmail: 'defaultFrom' };
+  const cfgIds = ['imapHost', 'imapUser', 'imapPass', 'smtpHost', 'smtpUser', 'smtpPass', 'defaultSenderEmail'];
+  const cfgKeyMap = { defaultSenderEmail: 'defaultFrom' };
   const cfgKey = (id) => cfgKeyMap[id] || id;
-
-  function initEmailJs() {
-    if (mailConfig.publicKey && typeof emailjs !== 'undefined') emailjs.init(mailConfig.publicKey);
-  }
 
   function loadConfig() {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -1122,30 +1111,18 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
       const el = byId(id), val = mailConfig[cfgKey(id)];
       if (el && val) el.value = val;
     });
-    initEmailJs();
   }
 
   function saveConfig() {
     cfgIds.forEach((id) => { mailConfig[cfgKey(id)] = byId(id).value; });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mailConfig));
-    initEmailJs();
   }
 
   function sendEmail() {
     const toEmail = dom.sendToEmail.value.trim();
     if (!toEmail) { alert('Please enter a recipient email address.'); return; }
-    const letterHtml = dom.preview.innerHTML;
-    const plainText  = dom.preview.innerText;
-    const subject    = `Kneuralabs Letter — ${dom.letterType.options[dom.letterType.selectedIndex].text}`;
-    if (mailConfig.publicKey && mailConfig.serviceId && mailConfig.templateId) {
-      emailjs.send(mailConfig.serviceId, mailConfig.templateId, {
-        to_email: toEmail, from_name: mailConfig.defaultFrom || mailConfig.smtpUser,
-        message_html: letterHtml, message_text: plainText, subject
-      }).then(() => alert('Email sent successfully.'))
-        .catch((err) => { alert('EmailJS error: ' + JSON.stringify(err)); fallbackMailTo(toEmail, subject, plainText); });
-    } else {
-      fallbackMailTo(toEmail, subject, plainText);
-    }
+    const subject = `Kneuralabs Letter — ${dom.letterType.options[dom.letterType.selectedIndex].text}`;
+    fallbackMailTo(toEmail, subject, dom.preview.innerText);
   }
 
   function fallbackMailTo(toEmail, subject, plainText) {
