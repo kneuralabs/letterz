@@ -972,6 +972,7 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
   function printLetter() {
     const content = document.getElementById('letterPreview').innerHTML;
     const win = window.open('', '_blank');
+    if (!win) { alert('Print was blocked by your browser. Please allow pop-ups for this site and try again.'); return; }
     win.document.write(`<!DOCTYPE html><html><head><title>Kneuralabs Letter</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
