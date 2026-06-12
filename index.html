@@ -721,9 +721,51 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 </div>
 
 <script>
-  // ── Logo preload as data URL (used in letterhead + print) ──
+/*
+ * Letterz — Kneuralabs Letter & Contract Studio
+ * ------------------------------------------------------------------
+ * Single-file, zero-build client app. The script is organised into
+ * cohesive modules inside one IIFE to keep the global scope clean:
+ *
+ *   logo      — preloads LOGO.png as a data URL for letterhead/print
+ *   dom       — cached lookups for stable elements + small helpers
+ *   templates — config-driven registry of document types
+ *   editor    — dynamic field rendering + rich-text formatting
+ *   preview   — renders the live letter (single source of truth)
+ *   actions   — copy / print
+ *   mail      — config persistence + EmailJS/mailto sending
+ *   ui        — modal + event wiring + bootstrap
+ *
+ * NOTE: behaviour is intentionally identical to the previous version.
+ */
+(function () {
+  'use strict';
+
+  /* ── dom: cached stable elements + helpers ───────────────────── */
+  const byId = (id) => document.getElementById(id);
+  const dom = {
+    letterType:        byId('letterType'),
+    issueDate:         byId('issueDateField'),
+    managerName:       byId('managerNameField'),
+    dynamicContainer:  byId('dynamicFieldsContainer'),
+    preview:           byId('letterPreview'),
+    liveBadge:         byId('liveBadge'),
+    editorBadge:       byId('editorBadge'),
+    sendToEmail:       byId('sendToEmail'),
+    toolbar:           byId('globalToolbar'),
+    modal:             byId('settingsModal'),
+  };
+  const getRichHTML = (id) => { const el = byId(id); return el ? el.innerHTML : ''; };
+
+  /** Short, human label for the currently selected document type. */
+  function currentTypeLabel() {
+    const opt = dom.letterType.options[dom.letterType.selectedIndex];
+    return opt.text.split(' / ')[0].split(' (')[0];
+  }
+
+  /* ── logo: preload as data URL (used in letterhead + print) ──── */
   let logoDataUrl = 'LOGO.png';
-  (function(){
+  (function preloadLogo() {
     const img = new Image();
     img.onload = () => {
       try {
@@ -731,33 +773,32 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
         c.width = img.width; c.height = img.height;
         c.getContext('2d').drawImage(img, 0, 0);
         logoDataUrl = c.toDataURL('image/png');
-      } catch(e) {}
+      } catch (e) { /* tainted canvas — fall back to the file path */ }
     };
     img.src = 'LOGO.png';
   })();
 
-  // ── Rich-text focus tracking ──
+  /* ── editor: rich-text formatting toolbar ────────────────────── */
   let activeEditable = null;
-  document.querySelectorAll('.rich-input').forEach(el => {
-    el.addEventListener('focus', e => activeEditable = e.currentTarget);
-    el.addEventListener('click', e => activeEditable = e.currentTarget);
+  const trackFocus = (el) => { activeEditable = el; };
+
+  document.querySelectorAll('.rich-input').forEach((el) => {
+    el.addEventListener('focus', (e) => trackFocus(e.currentTarget));
+    el.addEventListener('click', (e) => trackFocus(e.currentTarget));
   });
 
-  document.querySelectorAll('.tool-btn').forEach(btn => {
+  dom.toolbar.querySelectorAll('.tool-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       if (!activeEditable) {
         const first = document.querySelector('.rich-input');
-        if (first) { activeEditable = first; first.focus(); } else return;
+        if (!first) return;
+        activeEditable = first; first.focus();
       }
       document.execCommand(btn.getAttribute('data-cmd'), false, null);
       activeEditable.focus();
       updatePreview();
     });
   });
-
-  // ── Helpers ──
-  function getRichHTML(id){ const el = document.getElementById(id); return el ? el.innerHTML : ''; }
-  function getDateValue(){ return document.getElementById('issueDateField').value; }
 
   // ── Letter templates ──
   const letterTemplates = {
@@ -887,13 +928,12 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     }
   };
 
-  // ── Dynamic fields ──
+  /* ── editor: dynamic fields per document type ────────────────── */
   function rebuildDynamicFields(type) {
     const config = letterTemplates[type];
     if (!config) return;
-    const container = document.getElementById('dynamicFieldsContainer');
-    container.innerHTML = '';
-    config.fields.forEach(field => {
+    dom.dynamicContainer.innerHTML = '';
+    config.fields.forEach((field) => {
       const group = document.createElement('div');
       group.className = 'fgrp';
       const label = document.createElement('label');
@@ -910,67 +950,64 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
         div.className = 'rich-input dynamic-rich';
         div.setAttribute('data-dyn-name', field.name);
         div.innerHTML = field.defaultVal;
-        div.addEventListener('focus', () => activeEditable = div);
+        div.addEventListener('focus', () => trackFocus(div));
         div.addEventListener('input', updatePreview);
         group.appendChild(div);
       }
-      container.appendChild(group);
+      dom.dynamicContainer.appendChild(group);
     });
   }
 
-  // ── Collect form data ──
+  /* ── preview: collect form data + render the live letter ─────── */
   function collectFormData() {
-    const letterType = document.getElementById('letterType').value;
     const data = {
-      letterType,
+      letterType:      dom.letterType.value,
       employeeName:    getRichHTML('employeeNameField') || 'Employee',
       employeeRole:    getRichHTML('employeeRoleField') || 'Role',
-      managerName:     (document.getElementById('managerNameField').tagName === 'SELECT' ? document.getElementById('managerNameField').value : getRichHTML('managerNameField')) || 'Manager',
+      // managerName is a <select>; read its value (falls back defensively).
+      managerName:     (dom.managerName.tagName === 'SELECT' ? dom.managerName.value : getRichHTML('managerNameField')) || 'Manager',
       additionalNotes: getRichHTML('additionalNotesField') || '',
-      issueDate:       getDateValue()
+      issueDate:       dom.issueDate.value,
     };
-    document.querySelectorAll('.dynamic-date').forEach(d => { if (d.name) data[d.name] = d.value; });
-    document.querySelectorAll('.dynamic-rich').forEach(div => {
+    document.querySelectorAll('.dynamic-date').forEach((d) => { if (d.name) data[d.name] = d.value; });
+    document.querySelectorAll('.dynamic-rich').forEach((div) => {
       const name = div.getAttribute('data-dyn-name');
       if (name) data[name] = div.innerHTML;
     });
     return data;
   }
 
-  // ── Letterhead HTML — ultra minimal ──
+  // Ultra-minimal letterhead, shared by screen preview and print.
   function getLetterhead() {
     return `<div class="letterhead"><div class="lh-row"><div class="lh-ident"><img class="lh-mark" src="${logoDataUrl}" alt=""><span class="lh-name">Kneuralabs</span></div><address class="lh-contact">hello@kneuralabs.com<br>Manchester, CT &middot; Kolkata, IN</address></div><hr class="lh-rule"></div>`;
   }
 
-  // ── Update live preview ──
   function updatePreview() {
     const data = collectFormData();
     const tpl  = letterTemplates[data.letterType];
     if (!tpl) return;
     const footer = `<div class="letter-footer">Kneuralabs · Connecticut, USA &amp; Kolkata, India · hello@kneuralabs.com</div>`;
-    document.getElementById('letterPreview').innerHTML = getLetterhead() + tpl.template(data) + footer;
-    const sel = document.getElementById('letterType');
-    const label = sel.options[sel.selectedIndex].text.split(' / ')[0].split(' (')[0];
-    document.getElementById('liveBadge').innerText = label;
-    document.getElementById('editorBadge').innerText = label;
+    dom.preview.innerHTML = getLetterhead() + tpl.template(data) + footer;
+    const label = currentTypeLabel();
+    dom.liveBadge.innerText = label;
+    dom.editorBadge.innerText = label;
   }
 
-  // ── Copy ──
+  /* ── actions: copy + print ───────────────────────────────────── */
   function copyRichLetter() {
-    const html = document.getElementById('letterPreview').innerHTML;
-    const text = document.getElementById('letterPreview').innerText;
+    const html = dom.preview.innerHTML;
+    const text = dom.preview.innerText;
     navigator.clipboard.write([
       new ClipboardItem({
-        'text/html':  new Blob([html], {type:'text/html'}),
-        'text/plain': new Blob([text],{type:'text/plain'})
+        'text/html':  new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([text], { type: 'text/plain' })
       })
     ]).then(() => alert('Letter copied to clipboard.'))
       .catch(() => alert('Copy failed — try selecting and copying manually.'));
   }
 
-  // ── Print ──
   function printLetter() {
-    const content = document.getElementById('letterPreview').innerHTML;
+    const content = dom.preview.innerHTML;
     const win = window.open('', '_blank');
     if (!win) { alert('Print was blocked by your browser. Please allow pop-ups for this site and try again.'); return; }
     win.document.write(`<!DOCTYPE html><html><head><title>Kneuralabs Letter</title>
@@ -994,46 +1031,55 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     win.print();
   }
 
-  // ── Mail config ──
+  /* ── mail: config persistence + sending ──────────────────────── */
+  // NOTE: IMAP/SMTP credentials cannot be used directly from a browser;
+  // they are retained only as display/config values. Sending happens via
+  // EmailJS when configured, otherwise it falls back to a mailto: link.
+  // Persisted in localStorage in plaintext — do not store real secrets.
+  const STORAGE_KEY = 'kneuralabs_mail_config';
   let mailConfig = {
-    imapHost:'imap.secureserver.net', imapUser:'', imapPass:'',
-    smtpHost:'smtpout.secureserver.net', smtpUser:'', smtpPass:'',
-    publicKey:'', serviceId:'', templateId:'', defaultFrom:'hr@kneuralabs.com'
+    imapHost: 'imap.secureserver.net', imapUser: '', imapPass: '',
+    smtpHost: 'smtpout.secureserver.net', smtpUser: '', smtpPass: '',
+    publicKey: '', serviceId: '', templateId: '', defaultFrom: 'hr@kneuralabs.com'
   };
-  const cfgIds    = ['imapHost','imapUser','imapPass','smtpHost','smtpUser','smtpPass','emailjsPublicKey','emailjsServiceId','emailjsTemplateId','defaultSenderEmail'];
-  const cfgKeyMap = { emailjsPublicKey:'publicKey', emailjsServiceId:'serviceId', emailjsTemplateId:'templateId', defaultSenderEmail:'defaultFrom' };
+  // Map of DOM input id -> mailConfig key (id used directly when absent).
+  const cfgIds = ['imapHost', 'imapUser', 'imapPass', 'smtpHost', 'smtpUser', 'smtpPass',
+                  'emailjsPublicKey', 'emailjsServiceId', 'emailjsTemplateId', 'defaultSenderEmail'];
+  const cfgKeyMap = { emailjsPublicKey: 'publicKey', emailjsServiceId: 'serviceId', emailjsTemplateId: 'templateId', defaultSenderEmail: 'defaultFrom' };
+  const cfgKey = (id) => cfgKeyMap[id] || id;
+
+  function initEmailJs() {
+    if (mailConfig.publicKey && typeof emailjs !== 'undefined') emailjs.init(mailConfig.publicKey);
+  }
 
   function loadConfig() {
-    const saved = localStorage.getItem('kneuralabs_mail_config');
-    if (saved) { try { mailConfig = {...mailConfig, ...JSON.parse(saved)}; } catch(e){} }
-    cfgIds.forEach(id => {
-      const key = cfgKeyMap[id] || id;
-      const el  = document.getElementById(id);
-      if (el && mailConfig[key]) el.value = mailConfig[key];
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) { try { mailConfig = { ...mailConfig, ...JSON.parse(saved) }; } catch (e) { /* corrupt — keep defaults */ } }
+    cfgIds.forEach((id) => {
+      const el = byId(id), val = mailConfig[cfgKey(id)];
+      if (el && val) el.value = val;
     });
-    if (mailConfig.publicKey) emailjs.init(mailConfig.publicKey);
+    initEmailJs();
   }
 
   function saveConfig() {
-    cfgIds.forEach(id => { mailConfig[cfgKeyMap[id] || id] = document.getElementById(id).value; });
-    localStorage.setItem('kneuralabs_mail_config', JSON.stringify(mailConfig));
-    if (mailConfig.publicKey) emailjs.init(mailConfig.publicKey);
+    cfgIds.forEach((id) => { mailConfig[cfgKey(id)] = byId(id).value; });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mailConfig));
+    initEmailJs();
   }
 
-  // ── Send email ──
   function sendEmail() {
-    const toEmail = document.getElementById('sendToEmail').value.trim();
+    const toEmail = dom.sendToEmail.value.trim();
     if (!toEmail) { alert('Please enter a recipient email address.'); return; }
-    const letterHtml = document.getElementById('letterPreview').innerHTML;
-    const plainText  = document.getElementById('letterPreview').innerText;
-    const sel        = document.getElementById('letterType');
-    const subject    = `Kneuralabs Letter — ${sel.options[sel.selectedIndex].text}`;
+    const letterHtml = dom.preview.innerHTML;
+    const plainText  = dom.preview.innerText;
+    const subject    = `Kneuralabs Letter — ${dom.letterType.options[dom.letterType.selectedIndex].text}`;
     if (mailConfig.publicKey && mailConfig.serviceId && mailConfig.templateId) {
       emailjs.send(mailConfig.serviceId, mailConfig.templateId, {
         to_email: toEmail, from_name: mailConfig.defaultFrom || mailConfig.smtpUser,
         message_html: letterHtml, message_text: plainText, subject
       }).then(() => alert('Email sent successfully.'))
-        .catch(err => { alert('EmailJS error: ' + JSON.stringify(err)); fallbackMailTo(toEmail, subject, plainText); });
+        .catch((err) => { alert('EmailJS error: ' + JSON.stringify(err)); fallbackMailTo(toEmail, subject, plainText); });
     } else {
       fallbackMailTo(toEmail, subject, plainText);
     }
@@ -1045,29 +1091,29 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     window.location.href = link;
   }
 
-  // ── Modal ──
-  const modal = document.getElementById('settingsModal');
-  document.getElementById('settingsBtn').onclick     = () => modal.style.display = 'flex';
-  document.getElementById('closeModalBtn').onclick   = () => modal.style.display = 'none';
-  document.getElementById('saveEmailConfigBtn').onclick = () => { saveConfig(); modal.style.display = 'none'; alert('Settings saved.'); };
-  window.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+  /* ── ui: modal + event wiring ────────────────────────────────── */
+  const setModal = (open) => { dom.modal.style.display = open ? 'flex' : 'none'; };
+  byId('settingsBtn').addEventListener('click', () => setModal(true));
+  byId('closeModalBtn').addEventListener('click', () => setModal(false));
+  byId('saveEmailConfigBtn').addEventListener('click', () => { saveConfig(); setModal(false); alert('Settings saved.'); });
+  window.addEventListener('click', (e) => { if (e.target === dom.modal) setModal(false); });
 
-  // ── Event wiring ──
-  document.getElementById('letterType').addEventListener('change', () => {
-    rebuildDynamicFields(document.getElementById('letterType').value);
+  dom.letterType.addEventListener('change', () => {
+    rebuildDynamicFields(dom.letterType.value);
     updatePreview();
   });
-  document.getElementById('copyLetterBtn').addEventListener('click', copyRichLetter);
-  document.getElementById('printLetterBtn').addEventListener('click', printLetter);
-  document.getElementById('sendEmailBtn').addEventListener('click', sendEmail);
-  document.querySelectorAll('.rich-input').forEach(r => r.addEventListener('input', updatePreview));
-  document.getElementById('issueDateField').addEventListener('change', updatePreview);
-  document.getElementById('managerNameField').addEventListener('change', updatePreview);
+  byId('copyLetterBtn').addEventListener('click', copyRichLetter);
+  byId('printLetterBtn').addEventListener('click', printLetter);
+  byId('sendEmailBtn').addEventListener('click', sendEmail);
+  document.querySelectorAll('.rich-input').forEach((r) => r.addEventListener('input', updatePreview));
+  dom.issueDate.addEventListener('change', updatePreview);
+  dom.managerName.addEventListener('change', updatePreview);
 
-  // ── Init ──
+  /* ── bootstrap ───────────────────────────────────────────────── */
   rebuildDynamicFields('contract');
   loadConfig();
   updatePreview();
+})();
 </script>
 </body>
 </html>
