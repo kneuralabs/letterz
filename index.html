@@ -39,7 +39,8 @@ body {
     var(--bg);
   background-attachment: fixed;
   color: var(--ink);
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
@@ -121,11 +122,12 @@ body {
 /* ──────────────────── WORKSPACE ──────────────────── */
 .workspace {
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: 380px 1fr;
   gap: 1.25rem;
   padding: 1.25rem;
   flex: 1;
-  align-items: start;
+  min-height: 0;
+  align-items: stretch;
   max-width: 1480px;
   width: 100%;
   margin: 0 auto;
@@ -140,6 +142,7 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 0;
   animation: rise .45s cubic-bezier(.22,.8,.36,1) both;
 }
 .preview-panel { animation-delay: .08s; }
@@ -185,7 +188,10 @@ body {
 }
 
 /* ── form sections ── */
-.fsec { margin-bottom: 1.35rem; }
+.fsec { margin-bottom: 1rem; }
+#dynamicFieldsContainer { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin-bottom: .75rem; }
+#dynamicFieldsContainer:empty { display: none; }
+#dynamicFieldsContainer .fgrp { margin-bottom: 0; }
 .fsec:last-child { margin-bottom: .5rem; }
 .fsec-label {
   font-size: .64rem;
@@ -386,26 +392,33 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-/* paper — true A4 fixed ratio */
-.letter-wrap { padding: 1.5rem; display: flex; justify-content: center; }
+/* paper — fixed 700×990 A4 (matches print clone), scaled by JS to fit pane */
+.letter-wrap {
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
 .letter-paper {
   background: var(--paper);
   border-radius: 3px;
   border: 1px solid #dde2ee;
   box-shadow: var(--sh-lg), 0 0 0 1px rgba(18,24,42,.03);
-  width: 100%;
-  max-width: 700px;
-  aspect-ratio: 210 / 297;
+  width: 700px;
+  height: 990px;
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  transition: box-shadow .25s ease, transform .25s ease;
+  transform-origin: center;
+  transition: box-shadow .25s ease;
 }
 .letter-paper:hover {
   box-shadow: var(--sh-lg), 0 0 0 1px rgba(18,24,42,.04), 0 24px 64px rgba(18,24,42,.16);
-  transform: translateY(-2px);
 }
 .letter-stripe {
   height: 4px;
@@ -556,8 +569,10 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 
 /* ──────────────────── RESPONSIVE ──────────────────── */
 @media (max-width: 820px) {
+  body { height: auto; min-height: 100vh; overflow: auto; }
   .workspace { grid-template-columns: 1fr; }
   .editor-body { max-height: none; }
+  .letter-wrap { overflow: visible; }
 }
 @media (max-width: 580px) {
   .workspace { padding: .75rem; gap: .75rem; }
@@ -640,41 +655,38 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
         </div>
       </div>
 
-      <!-- Parties -->
+      <!-- Parties & details -->
       <div class="fsec">
-        <div class="fsec-label">Parties</div>
-        <div class="fgrp">
-          <label>Employee / Party</label>
-          <div class="rich-input" contenteditable="true" id="employeeNameField">Dr. Neha Verma</div>
+        <div class="fsec-label">Parties &amp; details</div>
+        <div class="frow" style="margin-bottom:.75rem;">
+          <div class="fgrp" style="margin-bottom:0;">
+            <label>Employee / Party</label>
+            <div class="rich-input" contenteditable="true" id="employeeNameField">Dr. Neha Verma</div>
+          </div>
+          <div class="fgrp" style="margin-bottom:0;">
+            <label>Role / Designation</label>
+            <div class="rich-input" contenteditable="true" id="employeeRoleField">Senior AI Research Engineer</div>
+          </div>
         </div>
-        <div class="fgrp">
-          <label>Role / Designation</label>
-          <div class="rich-input" contenteditable="true" id="employeeRoleField">Senior AI Research Engineer</div>
-        </div>
-        <div class="fgrp">
-          <label>Signatory / Manager</label>
-          <select id="managerNameField">
-            <option value="Piyal Gupta, CEO">Piyal Gupta, CEO</option>
-            <option value="Piyali Dhar, MD">Piyali Dhar, MD</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Details -->
-      <div class="fsec">
-        <div class="fsec-label">Details</div>
-        <div class="fgrp">
-          <label>Issue date</label>
-          <input type="date" id="issueDateField" value="2025-04-01">
+        <div class="frow" style="margin-bottom:.75rem;">
+          <div class="fgrp" style="margin-bottom:0;">
+            <label>Signatory / Manager</label>
+            <select id="managerNameField">
+              <option value="Piyal Gupta, CEO">Piyal Gupta, CEO</option>
+              <option value="Piyali Dhar, MD">Piyali Dhar, MD</option>
+            </select>
+          </div>
+          <div class="fgrp" style="margin-bottom:0;">
+            <label>Issue date</label>
+            <input type="date" id="issueDateField" value="2025-04-01">
+          </div>
         </div>
         <div id="dynamicFieldsContainer"></div>
         <div class="fgrp">
           <label>Additional notes / context</label>
-          <div class="rich-input" contenteditable="true" id="additionalNotesField" style="min-height:80px;">Equity vesting on a 4‑year schedule, performance‑based annual bonus.</div>
+          <div class="rich-input" contenteditable="true" id="additionalNotesField" style="min-height:60px;">Equity vesting on a 4‑year schedule, performance‑based annual bonus.</div>
         </div>
       </div>
-
-      <div class="tip"><b>Tip:</b> Click any text field, then use the format bar above to apply bold, italic, underline, or list formatting — changes reflect live in the preview.</div>
 
     </div><!-- /editor-body -->
 
@@ -1160,7 +1172,23 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
   dom.issueDate.addEventListener('change', updatePreview);
   dom.managerName.addEventListener('change', updatePreview);
 
+  /* ── preview scaler: fit fixed 700×990 paper into its pane ───── */
+  const paperWrap = document.querySelector('.letter-wrap');
+  const paperEl   = document.querySelector('.letter-paper');
+  function fitPaper() {
+    const stacked = window.innerWidth <= 820;
+    const s = stacked
+      ? Math.min(paperWrap.clientWidth / 700, 1)
+      : Math.min(paperWrap.clientWidth / 700, paperWrap.clientHeight / 990);
+    paperEl.style.transform = `scale(${s})`;
+    // In stacked (scrollable) layout the wrap must reserve the scaled height.
+    paperWrap.style.height = stacked ? `${990 * s + 32}px` : '';
+  }
+  new ResizeObserver(fitPaper).observe(paperWrap);
+  window.addEventListener('resize', fitPaper);
+
   /* ── bootstrap ───────────────────────────────────────────────── */
+  fitPaper();
   rebuildDynamicFields('contract');
   loadConfig();
   updatePreview();
