@@ -474,7 +474,8 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 .letter-content-display {
   font-family: 'EB Garamond', Georgia, 'Times New Roman', serif;
   line-height: 1.85;
-  font-size: 1.05rem;
+  /* 0.52rem × print zoom 1.5874 ≈ 9.9pt on paper (≤10pt requirement) */
+  font-size: .52rem;
   color: #1a1e30;
   white-space: normal;
 }
@@ -1069,7 +1070,7 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
   .lh-contact{font-family:'Plus Jakarta Sans',sans-serif;font-size:.5rem;color:#8892aa;letter-spacing:.03em;line-height:1.9;text-align:right;font-style:normal;}
   .lh-contact b{color:#12182a;font-weight:700;}
   .lh-rule{height:1px;background:#e4e7ef;border:none;display:block;width:100%;}
-  .letter-content-display{font-family:'EB Garamond',Georgia,serif;line-height:1.85;font-size:1.05rem;color:#1a1e30;white-space:normal;}
+  .letter-content-display{font-family:'EB Garamond',Georgia,serif;line-height:1.85;font-size:.52rem;color:#1a1e30;white-space:normal;}
   .letter-footer{margin-top:2.5rem;padding-top:.75rem;border-top:1px solid #e4e7ef;font-family:'Plus Jakarta Sans',sans-serif;font-size:.6rem;color:#8892aa;text-align:center;letter-spacing:.04em;break-inside:avoid;}
   strong{font-weight:700;}
 </style></head><body><div class="letter-stripe"></div><div class="letter-inner">${content}</div></body></html>`);
