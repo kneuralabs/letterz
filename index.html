@@ -9,7 +9,7 @@
 <link rel="icon" type="image/png" href="LOGO.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 /* ── tokens ── */
 :root {
@@ -394,7 +394,7 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
   border: 1px solid #dde2ee;
   box-shadow: var(--sh-lg), 0 0 0 1px rgba(18,24,42,.03);
   width: 100%;
-  max-width: 500px;
+  max-width: 700px;
   aspect-ratio: 210 / 297;
   overflow: hidden;
   position: relative;
@@ -408,58 +408,58 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
   transform: translateY(-2px);
 }
 .letter-stripe {
-  height: 3px;
+  height: 4px;
   flex-shrink: 0;
   background: linear-gradient(90deg, var(--blue) 0%, var(--blue) 62%, var(--red) 62%);
 }
 .letter-inner {
   flex: 1;
   overflow-y: auto;
-  padding: 2.75rem 3rem 2.5rem;
+  padding: 3.85rem 4.2rem 3.5rem;
   min-height: 0;
 }
 
 /* letterhead — ultra-minimal Scandinavian: 2-col grid, identity dominant */
 .letterhead {
-  margin-bottom: 2.75rem;
+  margin-bottom: 3.85rem;
   white-space: normal;
 }
 .lh-row {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  column-gap: 1.25rem;
-  margin-bottom: .9rem;
+  column-gap: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 .lh-ident {
   display: flex;
   align-items: center;
-  gap: .6rem;
+  gap: .85rem;
 }
 .lh-mark {
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
   display: block;
   flex-shrink: 0;
 }
 .lh-name {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.02rem;
+  font-size: 1.45rem;
   font-weight: 800;
-  letter-spacing: .24em;
+  letter-spacing: -.03em;
   color: var(--ink);
-  text-transform: uppercase;
 }
 .lh-contact {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: .5rem;
+  font-size: .68rem;
   color: var(--muted);
-  letter-spacing: .03em;
-  line-height: 1.9;
+  letter-spacing: .02em;
+  line-height: 1.8;
   text-align: right;
   font-style: normal;
 }
+.lh-contact a { color: var(--muted); text-decoration: none; }
 .lh-contact b { color: var(--ink); font-weight: 700; }
 .lh-rule {
   height: 1px;
@@ -472,10 +472,10 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 
 /* letter body */
 .letter-content-display {
-  font-family: 'EB Garamond', Georgia, 'Times New Roman', serif;
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   line-height: 1.85;
-  /* 0.52rem × print zoom 1.5874 ≈ 9.9pt on paper (≤10pt requirement) */
-  font-size: .52rem;
+  /* .735rem × print zoom 1.1339 = 13.33px = exactly 10pt on paper */
+  font-size: .735rem;
   color: #1a1e30;
   white-space: normal;
 }
@@ -483,15 +483,17 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 
 /* letter footer */
 .letter-footer {
-  margin-top: 2.5rem;
-  padding-top: .75rem;
+  margin-top: 3.5rem;
+  padding-top: 1.05rem;
   border-top: 1px solid var(--line);
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: .6rem;
+  font-size: .66rem;
   color: var(--muted);
   text-align: center;
-  letter-spacing: .04em;
+  letter-spacing: .03em;
+  line-height: 1.9;
 }
+.letter-footer b { color: var(--ink); font-weight: 700; }
 
 /* ──────────────────── MODAL ──────────────────── */
 .modal {
@@ -1020,14 +1022,14 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
 
   // Ultra-minimal letterhead, shared by screen preview and print.
   function getLetterhead() {
-    return `<div class="letterhead"><div class="lh-row"><div class="lh-ident"><img class="lh-mark" src="${logoDataUrl}" alt=""><span class="lh-name">Kneuralabs</span></div><address class="lh-contact"><b>Connecticut</b>&nbsp;345 Buckland Hills Dr, Manchester, CT 06042-8704, USA<br><b>Kolkata</b>&nbsp;12/1J Chanditala Lane, Tollygunge, Kolkata 700040, India &middot; +91 98871 74100<br>hello@kneuralabs.com</address></div><hr class="lh-rule"></div>`;
+    return `<div class="letterhead"><div class="lh-row"><div class="lh-ident"><img class="lh-mark" src="${logoDataUrl}" alt=""><span class="lh-name">Kneuralabs</span></div><address class="lh-contact">hello@kneuralabs.com<br>+91 98871 74100<br><a href="https://www.kneuralabs.com">www.kneuralabs.com</a></address></div><hr class="lh-rule"></div>`;
   }
 
   function updatePreview() {
     const data = collectFormData();
     const tpl  = letterTemplates[data.letterType];
     if (!tpl) return;
-    const footer = `<div class="letter-footer">Kneuralabs · Connecticut, USA &amp; Kolkata, India · hello@kneuralabs.com</div>`;
+    const footer = `<div class="letter-footer"><b>Connecticut</b>&nbsp;345 Buckland Hills Dr, Manchester, CT 06042-8704, USA<br><b>Kolkata</b>&nbsp;12/1J Chanditala Lane, Tollygunge, Kolkata 700040, India</div>`;
     dom.preview.innerHTML = getLetterhead() + tpl.template(data) + footer;
     const label = currentTypeLabel();
     dom.liveBadge.innerText = label;
@@ -1052,26 +1054,28 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     const win = window.open('', '_blank');
     if (!win) { alert('Print was blocked by your browser. Please allow pop-ups for this site and try again.'); return; }
     win.document.write(`<!DOCTYPE html><html><head><title>Kneuralabs Letter</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   /* WYSIWYG clone of the on-screen preview: identical px CSS, scaled
-     from the 500px-wide preview paper to 210mm A4 via a single zoom. */
+     from the 700px-wide preview paper to 210mm A4 via a single zoom. */
   @page{size:A4;margin:0;}
   *{box-sizing:border-box;margin:0;padding:0;}
   html{font-size:16px;}
-  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#fff;width:500px;zoom:1.5874;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .letter-stripe{height:3px;background:linear-gradient(90deg,#1e57a4 0%,#1e57a4 62%,#c0392b 62%);}
-  .letter-inner{padding:2.75rem 3rem 2.5rem;}
-  .letterhead{margin-bottom:2.75rem;white-space:normal;break-inside:avoid;}
-  .lh-row{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:1.25rem;margin-bottom:.9rem;}
-  .lh-ident{display:flex;align-items:center;gap:.6rem;}
-  .lh-mark{width:30px;height:30px;border-radius:6px;display:block;flex-shrink:0;}
-  .lh-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.02rem;font-weight:800;letter-spacing:.24em;color:#12182a;text-transform:uppercase;}
-  .lh-contact{font-family:'Plus Jakarta Sans',sans-serif;font-size:.5rem;color:#8892aa;letter-spacing:.03em;line-height:1.9;text-align:right;font-style:normal;}
+  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#fff;width:700px;zoom:1.1339;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .letter-stripe{height:4px;background:linear-gradient(90deg,#1e57a4 0%,#1e57a4 62%,#c0392b 62%);}
+  .letter-inner{padding:3.85rem 4.2rem 3.5rem;}
+  .letterhead{margin-bottom:3.85rem;white-space:normal;break-inside:avoid;}
+  .lh-row{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:1.5rem;margin-bottom:1.25rem;}
+  .lh-ident{display:flex;align-items:center;gap:.85rem;}
+  .lh-mark{width:42px;height:42px;border-radius:9px;display:block;flex-shrink:0;}
+  .lh-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.45rem;font-weight:800;letter-spacing:-.03em;color:#12182a;}
+  .lh-contact{font-family:'Plus Jakarta Sans',sans-serif;font-size:.68rem;color:#8892aa;letter-spacing:.02em;line-height:1.8;text-align:right;font-style:normal;}
+  .lh-contact a{color:#8892aa;text-decoration:none;}
   .lh-contact b{color:#12182a;font-weight:700;}
   .lh-rule{height:1px;background:#e4e7ef;border:none;display:block;width:100%;}
-  .letter-content-display{font-family:'EB Garamond',Georgia,serif;line-height:1.85;font-size:.52rem;color:#1a1e30;white-space:normal;}
-  .letter-footer{margin-top:2.5rem;padding-top:.75rem;border-top:1px solid #e4e7ef;font-family:'Plus Jakarta Sans',sans-serif;font-size:.6rem;color:#8892aa;text-align:center;letter-spacing:.04em;break-inside:avoid;}
+  .letter-content-display{font-family:'Cormorant Garamond',Georgia,serif;line-height:1.85;font-size:.735rem;color:#1a1e30;white-space:normal;}
+  .letter-footer{margin-top:3.5rem;padding-top:1.05rem;border-top:1px solid #e4e7ef;font-family:'Plus Jakarta Sans',sans-serif;font-size:.66rem;color:#8892aa;text-align:center;letter-spacing:.03em;line-height:1.9;break-inside:avoid;}
+  .letter-footer b{color:#12182a;font-weight:700;}
   strong{font-weight:700;}
 </style></head><body><div class="letter-stripe"></div><div class="letter-inner">${content}</div></body></html>`);
     win.document.close();
