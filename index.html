@@ -9,7 +9,7 @@
 <link rel="icon" type="image/png" href="LOGO.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 /* ── tokens ── */
 :root {
@@ -457,14 +457,14 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
   flex-shrink: 0;
 }
 .lh-name {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
   font-size: 1.45rem;
-  font-weight: 800;
-  letter-spacing: -.03em;
+  font-weight: 400;
+  letter-spacing: -.02em;
   color: var(--ink);
 }
 .lh-contact {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
   font-size: .68rem;
   color: var(--muted);
   letter-spacing: .02em;
@@ -507,6 +507,10 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
   line-height: 1.9;
 }
 .letter-footer b { color: var(--ink); font-weight: 700; }
+
+/* PDF export clone (off-screen): footer sticks to bottom of the A4 page */
+.pdf-export .letter-content-display { display: flex; flex-direction: column; min-height: 862px; }
+.pdf-export .letter-footer { margin-top: auto; }
 
 /* ──────────────────── MODAL ──────────────────── */
 .modal {
@@ -1057,7 +1061,7 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     const win = window.open('', '_blank');
     if (!win) { alert('Print was blocked by your browser. Please allow pop-ups for this site and try again.'); return; }
     win.document.write(`<!DOCTYPE html><html><head><title>Kneuralabs Letter</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   /* WYSIWYG clone of the on-screen preview: identical px CSS, scaled
      from the 700px-wide preview paper to 210mm A4 via a single zoom. */
@@ -1071,16 +1075,16 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
   .lh-row{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:1.5rem;margin-bottom:1.25rem;}
   .lh-ident{display:flex;align-items:center;gap:.85rem;}
   .lh-mark{width:42px;height:42px;border-radius:9px;display:block;flex-shrink:0;}
-  .lh-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.45rem;font-weight:800;letter-spacing:-.03em;color:#12182a;}
-  .lh-contact{font-family:'Plus Jakarta Sans',sans-serif;font-size:.68rem;color:#8892aa;letter-spacing:.02em;line-height:1.8;text-align:right;font-style:normal;}
+  .lh-name{font-family:'Inter','Plus Jakarta Sans',sans-serif;font-size:1.45rem;font-weight:400;letter-spacing:-.02em;color:#12182a;}
+  .lh-contact{font-family:'Inter','Plus Jakarta Sans',sans-serif;font-size:.68rem;color:#8892aa;letter-spacing:.02em;line-height:1.8;text-align:right;font-style:normal;}
   .lh-contact a{color:#8892aa;text-decoration:none;}
   .lh-contact b{color:#12182a;font-weight:700;}
   .lh-rule{height:1px;background:#e4e7ef;border:none;display:block;width:100%;}
-  .letter-content-display{font-family:'Cormorant Garamond',Georgia,serif;line-height:1.85;font-size:.735rem;color:#1a1e30;white-space:normal;}
-  .letter-footer{margin-top:3.5rem;padding-top:1.05rem;border-top:1px solid #e4e7ef;font-family:'Plus Jakarta Sans',sans-serif;font-size:.66rem;color:#8892aa;text-align:center;letter-spacing:.03em;line-height:1.9;break-inside:avoid;}
+  .letter-content-display{font-family:'Cormorant Garamond',Georgia,serif;line-height:1.85;font-size:.735rem;color:#1a1e30;white-space:normal;display:flex;flex-direction:column;min-height:862px;}
+  .letter-footer{margin-top:auto;padding-top:1.05rem;border-top:1px solid #e4e7ef;font-family:'Inter','Plus Jakarta Sans',sans-serif;font-size:.66rem;color:#8892aa;text-align:center;letter-spacing:.03em;line-height:1.9;break-inside:avoid;}
   .letter-footer b{color:#12182a;font-weight:700;}
   strong{font-weight:700;}
-</style></head><body><div class="letter-stripe"></div><div class="letter-inner">${content}</div></body></html>`);
+</style></head><body><div class="letter-stripe"></div><div class="letter-inner"><div class="letter-content-display">${content}</div></div></body></html>`);
     win.document.close();
     win.print();
   }
@@ -1125,8 +1129,9 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
 
     // Build a hidden render container using identical CSS as the print clone.
     const wrap = document.createElement('div');
+    wrap.className = 'pdf-export';
     wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:700px;font-family:\'Plus Jakarta Sans\',system-ui,sans-serif;font-size:16px;background:#fff;';
-    wrap.innerHTML = `<div style="height:4px;background:linear-gradient(90deg,#1e57a4 0%,#1e57a4 62%,#c0392b 62%);"></div><div style="padding:3.85rem 4.2rem 3.5rem;">${dom.preview.innerHTML}</div>`;
+    wrap.innerHTML = `<div style="height:4px;background:linear-gradient(90deg,#1e57a4 0%,#1e57a4 62%,#c0392b 62%);"></div><div style="padding:3.85rem 4.2rem 3.5rem;"><div class="letter-content-display">${dom.preview.innerHTML}</div></div>`;
     document.body.appendChild(wrap);
 
     html2pdf().set({
