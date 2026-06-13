@@ -431,7 +431,7 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 .letter-inner {
   flex: 1;
   overflow-y: auto;
-  padding: 3.85rem 4.2rem 3.5rem;
+  padding: 2.4rem 4.2rem 2.6rem;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -439,7 +439,7 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 
 /* letterhead — ultra-minimal Scandinavian: 2-col grid, identity dominant */
 .letterhead {
-  margin-bottom: 3.85rem;
+  margin-bottom: 1.4rem;
   white-space: normal;
 }
 .lh-row {
@@ -447,7 +447,7 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
   grid-template-columns: 1fr auto;
   align-items: center;
   column-gap: 1.5rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: .85rem;
 }
 .lh-ident {
   display: flex;
@@ -491,7 +491,7 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 /* letter body */
 .letter-content-display {
   font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-  line-height: 1.85;
+  line-height: 1.58;
   /* .735rem × print zoom 1.1339 = 13.33px = exactly 10pt on paper */
   font-size: .735rem;
   color: #1a1e30;
@@ -679,8 +679,8 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
           <div class="fgrp" style="margin-bottom:0;">
             <label>Signatory / Manager</label>
             <select id="managerNameField">
-              <option value="Piyal Gupta, CEO">Piyal Gupta, CEO</option>
-              <option value="Piyali Dhar, MD">Piyali Dhar, MD</option>
+              <option value="Piyal Gupta, Chief Executive Officer">Piyal Gupta, Chief Executive Officer</option>
+              <option value="Piyali Dhar, Managing Director">Piyali Dhar, Managing Director</option>
             </select>
           </div>
           <div class="fgrp" style="margin-bottom:0;">
@@ -691,7 +691,7 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
         <div id="dynamicFieldsContainer"></div>
         <div class="fgrp">
           <label>Additional notes / context</label>
-          <div class="rich-input" contenteditable="true" id="additionalNotesField" style="min-height:110px;">All terms stated above are subject to the Company's prevailing policies and to applicable law. Please review carefully and contact hr@kneuralabs.com with any questions before signing.</div>
+          <div class="rich-input" contenteditable="true" id="additionalNotesField" style="min-height:110px;">All terms above are subject to the Company's prevailing policies and applicable law. Please review carefully and contact hr@kneuralabs.com before signing.</div>
         </div>
       </div>
 
@@ -806,6 +806,16 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
     return opt.text.split(' / ')[0].split(' (')[0];
   }
 
+  /** Descriptive PDF filename, e.g. "Kneuralabs_Employment-Contract_Dr-Neha-Verma_19-Feb-2026". */
+  function pdfName() {
+    const slug = (s) => (s || '').replace(/<[^>]+>/g, ' ').replace(/&[^;]+;/g, ' ')
+      .trim().replace(/[^\w]+/g, '-').replace(/^-+|-+$/g, '');
+    const type  = slug(currentTypeLabel());
+    const party = slug(getRichHTML('employeeNameField')) || 'Letter';
+    const date  = formatDate(dom.issueDate.value).replace(/\//g, '-');
+    return `Kneuralabs_${type}_${party}_${date}`.replace(/_+/g, '_');
+  }
+
   /* ── logo: preload as data URL (used in letterhead + print) ──── */
   let logoDataUrl = 'LOGO.png';
   fetch('LOGO.png')
@@ -853,7 +863,7 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 <strong>Role:</strong> ${d.employeeRole}<br>
 <strong>Signatory:</strong> ${d.managerName}<br><br>
 This Employment Contract ("Agreement") is made between Kneuralabs ("the Company") and ${d.employeeName} ("the Employee").<br><br>
-<strong>1. Term.</strong> Employment begins on ${d.startDate} for a fixed term of ${d.contractDuration}. The term may be renewed in writing every six (6) months at the Company's sole discretion, subject to a satisfactory performance review. This is a fixed-term engagement; it does not create permanent or indefinite employment, and no assurance of renewal is given.<br>
+<strong>1. Term.</strong> Employment begins on ${d.startDate} for a fixed term of ${d.contractDuration}. The term may be renewed in writing every six (6) months at the Company's sole discretion, subject to a satisfactory performance review. This fixed-term engagement creates no permanent or indefinite employment, and no renewal is assured.<br>
 <strong>2. Compensation.</strong> ${d.annualSalary}. All salary, bonus, equity and benefits are subject to applicable taxes and statutory deductions and to the Company's prevailing policies, which may change from time to time.<br>
 <strong>3. Duties &amp; conduct.</strong> The Employee shall perform the duties of the Role diligently, in good faith, and in compliance with all lawful Company policies and applicable law.<br>
 <strong>4. Confidentiality &amp; intellectual property.</strong> All models, code, architectures, research and other work product created in connection with the engagement are "works made for hire" and remain the sole property of Kneuralabs. Confidentiality and IP obligations survive termination.<br>
@@ -1082,16 +1092,16 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     document.body.appendChild(iframe);
     const win = iframe.contentWindow;
     win.document.open();
-    win.document.write(`<!DOCTYPE html><html><head><title>Kneuralabs-${currentTypeLabel().replace(/[^\w]+/g, '-')}</title>
+    win.document.write(`<!DOCTYPE html><html><head><title>${pdfName()}</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   @page{size:A4;margin:0;}
   *{box-sizing:border-box;margin:0;padding:0;}
   html{font-size:16px;}
   body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#fff;width:700px;zoom:1.1339;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .letter-inner{padding:3.85rem 4.2rem 3.5rem;}
-  .letterhead{margin-bottom:3.85rem;white-space:normal;break-inside:avoid;}
-  .lh-row{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:1.5rem;margin-bottom:1.25rem;}
+  .letter-inner{padding:2.4rem 4.2rem 2.6rem;}
+  .letterhead{margin-bottom:1.4rem;white-space:normal;break-inside:avoid;}
+  .lh-row{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:1.5rem;margin-bottom:.85rem;}
   .lh-ident{display:flex;align-items:center;gap:.85rem;}
   .lh-mark{width:42px;height:42px;border-radius:9px;display:block;flex-shrink:0;}
   .lh-name{font-family:'Inter','Plus Jakarta Sans',sans-serif;font-size:1.45rem;font-weight:400;letter-spacing:-.02em;color:#12182a;}
@@ -1099,7 +1109,7 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
   .lh-contact a{color:#8892aa;text-decoration:none;}
   .lh-contact b{color:#12182a;font-weight:700;}
   .lh-rule{height:1px;background:#e4e7ef;border:none;display:block;width:100%;}
-  .letter-content-display{font-family:'Cormorant Garamond',Georgia,serif;line-height:1.85;font-size:.735rem;color:#1a1e30;white-space:normal;display:flex;flex-direction:column;min-height:862px;}
+  .letter-content-display{font-family:'Cormorant Garamond',Georgia,serif;line-height:1.58;font-size:.735rem;color:#1a1e30;white-space:normal;display:flex;flex-direction:column;min-height:905px;}
   .letter-footer{margin-top:auto;padding-top:1.05rem;border-top:1px solid #e4e7ef;font-family:'Inter','Plus Jakarta Sans',sans-serif;font-size:.66rem;color:#8892aa;text-align:center;letter-spacing:.03em;line-height:1.9;break-inside:avoid;}
   .letter-footer b{color:#12182a;font-weight:700;}
   strong{font-weight:700;}
