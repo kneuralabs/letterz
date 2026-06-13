@@ -1039,23 +1039,64 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
   function downloadPdf() {
     const btn  = byId('downloadPdfBtn');
     const orig = btn.innerHTML;
+    // If the CDN library didn't load, fall back to the browser's
+    // print-to-PDF so the action still produces a PDF.
+    if (typeof html2pdf === 'undefined') { printToPdf(); return; }
     btn.disabled = true;
     btn.textContent = 'Preparing PDF…';
 
+    // Proven structure: plain inline-styled stripe + padding wrapper (no
+    // overflow/flex container) so html2canvas captures the full content.
     const wrap = document.createElement('div');
     wrap.className = 'pdf-export';
     wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:700px;font-family:\'Plus Jakarta Sans\',system-ui,sans-serif;font-size:16px;background:#fff;';
-    wrap.innerHTML = `<div class="letter-stripe"></div><div class="letter-inner"><div class="letter-content-display">${dom.preview.innerHTML}</div></div>`;
+    wrap.innerHTML = `<div style="height:4px;background:linear-gradient(90deg,#1e57a4 0%,#1e57a4 62%,#c0392b 62%);"></div><div style="padding:3.85rem 4.2rem 3.5rem;"><div class="letter-content-display">${dom.preview.innerHTML}</div></div>`;
     document.body.appendChild(wrap);
 
     const done = () => { document.body.removeChild(wrap); btn.disabled = false; btn.innerHTML = orig; };
-    html2pdf().set({
+    const fail = () => { done(); printToPdf(); };
+    const run = () => html2pdf().set({
       margin: 0,
       filename: 'Kneuralabs-Letter.pdf',
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
       jsPDF: { unit: 'px', format: [700, 990], orientation: 'portrait', hotfixes: ['px_scaling'] }
-    }).from(wrap).save().then(done).catch(done);
+    }).from(wrap).save().then(done).catch(fail);
+
+    // Wait for web fonts so text isn't dropped from the canvas.
+    (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(run);
+  }
+
+  // Fallback: open a print-ready A4 clone and invoke the browser's print
+  // dialog, where "Save as PDF" produces the same document.
+  function printToPdf() {
+    const win = window.open('', '_blank');
+    if (!win) { alert('PDF generation was blocked by your browser. Please allow pop-ups for this site and try again.'); return; }
+    win.document.write(`<!DOCTYPE html><html><head><title>Kneuralabs Letter</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  @page{size:A4;margin:0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:16px;}
+  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#fff;width:700px;zoom:1.1339;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .letter-inner{padding:3.85rem 4.2rem 3.5rem;}
+  .letterhead{margin-bottom:3.85rem;white-space:normal;break-inside:avoid;}
+  .lh-row{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:1.5rem;margin-bottom:1.25rem;}
+  .lh-ident{display:flex;align-items:center;gap:.85rem;}
+  .lh-mark{width:42px;height:42px;border-radius:9px;display:block;flex-shrink:0;}
+  .lh-name{font-family:'Inter','Plus Jakarta Sans',sans-serif;font-size:1.45rem;font-weight:400;letter-spacing:-.02em;color:#12182a;}
+  .lh-contact{font-family:'Inter','Plus Jakarta Sans',sans-serif;font-size:.68rem;color:#8892aa;letter-spacing:.02em;line-height:1.8;text-align:right;font-style:normal;}
+  .lh-contact a{color:#8892aa;text-decoration:none;}
+  .lh-contact b{color:#12182a;font-weight:700;}
+  .lh-rule{height:1px;background:#e4e7ef;border:none;display:block;width:100%;}
+  .letter-content-display{font-family:'Cormorant Garamond',Georgia,serif;line-height:1.85;font-size:.735rem;color:#1a1e30;white-space:normal;display:flex;flex-direction:column;min-height:862px;}
+  .letter-footer{margin-top:auto;padding-top:1.05rem;border-top:1px solid #e4e7ef;font-family:'Inter','Plus Jakarta Sans',sans-serif;font-size:.66rem;color:#8892aa;text-align:center;letter-spacing:.03em;line-height:1.9;break-inside:avoid;}
+  .letter-footer b{color:#12182a;font-weight:700;}
+  strong{font-weight:700;}
+</style></head><body><div style="height:4px;background:linear-gradient(90deg,#1e57a4 0%,#1e57a4 62%,#c0392b 62%);"></div><div class="letter-inner"><div class="letter-content-display">${dom.preview.innerHTML}</div></div>
+<script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>
+</body></html>`);
+    win.document.close();
   }
 
   /* ── mail: config persistence + sending ──────────────────────── */
