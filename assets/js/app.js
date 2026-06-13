@@ -26,7 +26,6 @@
     preview:           byId('letterPreview'),
     liveBadge:         byId('liveBadge'),
     editorBadge:       byId('editorBadge'),
-    toolbar:           byId('globalToolbar'),
     modal:             byId('settingsModal'),
   };
   const getRichHTML = (id) => { const el = byId(id); return el ? el.innerHTML : ''; };
@@ -57,28 +56,6 @@
       reader.readAsDataURL(blob);
     })
     .catch(() => {});
-
-  /* ── editor: rich-text formatting toolbar ────────────────────── */
-  let activeEditable = null;
-  const trackFocus = (el) => { activeEditable = el; };
-
-  document.querySelectorAll('.rich-input').forEach((el) => {
-    el.addEventListener('focus', (e) => trackFocus(e.currentTarget));
-    el.addEventListener('click', (e) => trackFocus(e.currentTarget));
-  });
-
-  dom.toolbar.querySelectorAll('.tool-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      if (!activeEditable) {
-        const first = document.querySelector('.rich-input');
-        if (!first) return;
-        activeEditable = first; first.focus();
-      }
-      document.execCommand(btn.getAttribute('data-cmd'), false, null);
-      activeEditable.focus();
-      updatePreview();
-    });
-  });
 
   // ── Letter templates ──
   const letterTemplates = {
@@ -248,7 +225,6 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
         div.className = 'rich-input dynamic-rich';
         div.setAttribute('data-dyn-name', field.name);
         div.innerHTML = field.defaultVal;
-        div.addEventListener('focus', () => trackFocus(div));
         div.addEventListener('input', updatePreview);
         group.appendChild(div);
       }

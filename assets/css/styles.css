@@ -252,34 +252,6 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 .rich-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-lt); }
 .rich-input[style*="min-height:80px"], .rich-input[style*="min-height: 80px"] { min-height: 80px; }
 
-/* ── format toolbar ── */
-.fmt-bar {
-  display: flex;
-  align-items: center;
-  gap: .2rem;
-  background: var(--bg);
-  border: 1.5px solid var(--line);
-  border-radius: 8px;
-  padding: .35rem .5rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-.tool-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  padding: .32rem .42rem;
-  border-radius: 5px;
-  cursor: pointer;
-  color: var(--ink2);
-  transition: background .12s, color .12s;
-}
-.tool-btn:hover { background: var(--blue-lt); color: var(--blue); }
-.tool-btn .ico { width: 13px; height: 13px; flex-shrink: 0; }
-.fmt-sep { width: 1px; height: 16px; background: var(--line); margin: 0 .2rem; flex-shrink: 0; }
-
 /* ── tip ── */
 .tip {
   background: var(--blue-lt);
