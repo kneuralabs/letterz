@@ -998,6 +998,17 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
   }
 
   /* ── preview: collect form data + render the live letter ─────── */
+  // Format an ISO date (yyyy-mm-dd) into a formal long form, e.g.
+  // "April 1, 2025". Non-ISO or empty values pass through untouched so
+  // the templates never show a raw machine date in a finished letter.
+  function formatDate(iso) {
+    if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso || '';
+    const [y, m, d] = iso.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    if (isNaN(dt)) return iso;
+    return dt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
   function collectFormData() {
     const data = {
       letterType:      dom.letterType.value,
@@ -1006,9 +1017,9 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
       // managerName is a <select>; read its value (falls back defensively).
       managerName:     (dom.managerName.tagName === 'SELECT' ? dom.managerName.value : getRichHTML('managerNameField')) || 'Manager',
       additionalNotes: getRichHTML('additionalNotesField') || '',
-      issueDate:       dom.issueDate.value,
+      issueDate:       formatDate(dom.issueDate.value),
     };
-    document.querySelectorAll('.dynamic-date').forEach((d) => { if (d.name) data[d.name] = d.value; });
+    document.querySelectorAll('.dynamic-date').forEach((d) => { if (d.name) data[d.name] = formatDate(d.value); });
     document.querySelectorAll('.dynamic-rich').forEach((div) => {
       const name = div.getAttribute('data-dyn-name');
       if (name) data[name] = div.innerHTML;
@@ -1057,7 +1068,7 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     const fail = () => { done(); printToPdf(); };
     const run = () => html2pdf().set({
       margin: 0,
-      filename: 'Kneuralabs-Letter.pdf',
+      filename: `Kneuralabs-${currentTypeLabel().replace(/[^\w]+/g, '-')}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
       jsPDF: { unit: 'px', format: [700, 990], orientation: 'portrait', hotfixes: ['px_scaling'] }
