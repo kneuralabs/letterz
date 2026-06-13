@@ -72,7 +72,7 @@
         <div class="fgrp">
           <label>Letter type</label>
           <select id="letterType">
-            <option value="contract">Employment Contract (6-Month Renewable)</option>
+            <option value="contract">Employment Contract</option>
             <option value="appointment">Appointment / Offer Letter</option>
             <option value="termination">Termination Letter</option>
             <option value="promotion">Promotion Letter</option>
@@ -87,17 +87,32 @@
       <!-- Parties & details -->
       <div class="fsec">
         <div class="fsec-label">Parties &amp; details</div>
-        <div class="frow" style="margin-bottom:.75rem;">
+        <div class="frow" style="grid-template-columns:auto 1fr 1fr;margin-bottom:.75rem;">
           <div class="fgrp" style="margin-bottom:0;">
-            <label>Employee / Party</label>
-            <div class="rich-input" contenteditable="true" id="employeeNameField">Dr. Neha Verma</div>
+            <label>Prefix</label>
+            <select id="employeePrefixField">
+              <option>Mr.</option>
+              <option>Mrs.</option>
+              <option>Ms.</option>
+              <option>Mx.</option>
+              <option selected>Dr.</option>
+              <option>Prof.</option>
+            </select>
           </div>
+          <div class="fgrp" style="margin-bottom:0;">
+            <label>First name</label>
+            <div class="rich-input" contenteditable="true" id="employeeFirstField">Neha</div>
+          </div>
+          <div class="fgrp" style="margin-bottom:0;">
+            <label>Last name</label>
+            <div class="rich-input" contenteditable="true" id="employeeLastField">Verma</div>
+          </div>
+        </div>
+        <div class="frow" style="margin-bottom:.75rem;">
           <div class="fgrp" style="margin-bottom:0;">
             <label>Role / Designation</label>
             <div class="rich-input" contenteditable="true" id="employeeRoleField">Senior AI Research Engineer</div>
           </div>
-        </div>
-        <div class="frow" style="margin-bottom:.75rem;">
           <div class="fgrp" style="margin-bottom:0;">
             <label>Signatory / Manager</label>
             <select id="managerNameField">
@@ -105,10 +120,10 @@
               <option value="Piyali Dhar, Managing Director">Piyali Dhar, Managing Director</option>
             </select>
           </div>
-          <div class="fgrp" style="margin-bottom:0;">
-            <label>Issue date</label>
-            <input type="date" id="issueDateField" value="2026-02-19" min="2026-02-19">
-          </div>
+        </div>
+        <div class="fgrp" style="margin-bottom:.75rem;">
+          <label>Issue date</label>
+          <input type="date" id="issueDateField" value="2026-02-19" min="2026-02-19">
         </div>
         <div id="dynamicFieldsContainer"></div>
         <div class="fgrp">
