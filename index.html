@@ -44,6 +44,9 @@ body {
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  accent-color: var(--blue);
 }
 
 /* ── scrollbars ── */
@@ -508,10 +511,6 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 }
 .letter-footer b { color: var(--ink); font-weight: 700; }
 
-/* PDF export clone (off-screen): footer sticks to bottom of the A4 page */
-.pdf-export .letter-content-display { display: flex; flex-direction: column; min-height: 862px; }
-.pdf-export .letter-footer { margin-top: auto; }
-
 /* ──────────────────── MODAL ──────────────────── */
 .modal {
   display: none;
@@ -585,7 +584,6 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
   .brand-sub, .brand-pipe { display: none; }
 }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -768,7 +766,7 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
       <div class="fgrp"><label>Default Sender</label><input type="email" id="defaultSenderEmail" placeholder="hr@kneuralabs.com" value="hr@kneuralabs.com"></div>
     </div>
     <div class="modal-ftr">
-      <p>"Send" opens your default mail client via mailto:, CC'ing the SMTP username or default sender.</p>
+      <p>"Send" copies the formatted letter and opens Gmail compose — paste (Ctrl/Cmd+V) to drop in the rich letter, exactly as previewed. CC's the SMTP username or default sender.</p>
       <button id="saveEmailConfigBtn" class="btn btn-primary">Save Settings</button>
     </div>
   </div>
@@ -1032,6 +1030,25 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     return `<div class="letterhead"><div class="lh-row"><div class="lh-ident"><img class="lh-mark" src="${logoDataUrl}" alt=""><span class="lh-name">Kneuralabs</span></div><address class="lh-contact">hello@kneuralabs.com<br>+91 98871 74100<br><a href="https://www.kneuralabs.com">www.kneuralabs.com</a></address></div><hr class="lh-rule"></div>`;
   }
 
+  // Fully inline-styled rendition of the live preview, for pasting into an
+  // email client (which strips <style>/classes). Mirrors the preview look.
+  function buildEmailHTML(data) {
+    const tpl = letterTemplates[data.letterType];
+    if (!tpl) return '';
+    const head =
+      `<table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:28px;"><tr>`
+      + `<td style="vertical-align:middle;"><img src="${logoDataUrl}" width="42" height="42" style="border-radius:9px;display:inline-block;vertical-align:middle;"><span style="font-family:Helvetica,Arial,sans-serif;font-size:23px;letter-spacing:-.02em;color:#12182a;vertical-align:middle;padding-left:12px;">Kneuralabs</span></td>`
+      + `<td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#8892aa;line-height:1.8;white-space:nowrap;">hello@kneuralabs.com<br>+91 98871 74100<br><a href="https://www.kneuralabs.com" style="color:#8892aa;text-decoration:none;">www.kneuralabs.com</a></td>`
+      + `</tr></table><div style="height:1px;background:#e4e7ef;margin:0 0 28px;"></div>`;
+    const foot =
+      `<div style="margin-top:40px;padding-top:16px;border-top:1px solid #e4e7ef;font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#8892aa;text-align:center;line-height:1.9;">`
+      + `<b style="color:#12182a;">Connecticut</b>&nbsp;345 Buckland Hills Dr, Manchester, CT 06042-8704, USA<br>`
+      + `<b style="color:#12182a;">Kolkata</b>&nbsp;12/1J Chanditala Lane, Tollygunge, Kolkata 700040, India</div>`;
+    return `<div style="max-width:680px;margin:0 auto;background:#fff;font-family:Georgia,'Times New Roman',serif;color:#1a1e30;line-height:1.85;font-size:15px;">`
+      + `<div style="height:4px;background:linear-gradient(90deg,#1e57a4 0%,#1e57a4 62%,#c0392b 62%);"></div>`
+      + `<div style="padding:34px 40px 30px;">${head}${tpl.template(data)}${foot}</div></div>`;
+  }
+
   function updatePreview() {
     const data = collectFormData();
     const tpl  = letterTemplates[data.letterType];
@@ -1119,44 +1136,46 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mailConfig));
   }
 
+  // Briefly swap a button's label, then restore its original markup.
+  function flashBtn(btn, msg, ms) {
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.textContent = msg;
+    setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, ms || 2800);
+  }
+
+  // Compose the letter as a rich-text email that looks exactly like the
+  // preview. The formatted HTML is placed on the clipboard and Gmail's
+  // compose window is opened with the recipient/subject prefilled — one
+  // paste (Ctrl/Cmd+V) drops in the letter as previewed. Where rich
+  // clipboard isn't available, we fall back to a plain-text mailto body.
   function sendEmail() {
     const toEmail = dom.sendToEmail.value.trim();
     if (!toEmail) { alert('Please enter a recipient email address.'); return; }
     const subject = `Kneuralabs Letter — ${dom.letterType.options[dom.letterType.selectedIndex].text}`;
-    const btn = byId('sendEmailBtn');
-    btn.disabled = true;
-    btn.textContent = 'Preparing…';
-
-    // Build a hidden render container using identical CSS as the print clone.
-    const wrap = document.createElement('div');
-    wrap.className = 'pdf-export';
-    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:700px;font-family:\'Plus Jakarta Sans\',system-ui,sans-serif;font-size:16px;background:#fff;';
-    wrap.innerHTML = `<div style="height:4px;background:linear-gradient(90deg,#1e57a4 0%,#1e57a4 62%,#c0392b 62%);"></div><div style="padding:3.85rem 4.2rem 3.5rem;"><div class="letter-content-display">${dom.preview.innerHTML}</div></div>`;
-    document.body.appendChild(wrap);
-
-    html2pdf().set({
-      margin: 0,
-      filename: 'Kneuralabs-Letter.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
-      jsPDF: { unit: 'px', format: [700, 990], orientation: 'portrait', hotfixes: ['px_scaling'] }
-    }).from(wrap).save().then(() => {
-      document.body.removeChild(wrap);
-      btn.disabled = false;
-      btn.innerHTML = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send';
-      fallbackMailTo(toEmail, subject, dom.preview.innerText);
-    }).catch(() => {
-      document.body.removeChild(wrap);
-      btn.disabled = false;
-      btn.innerHTML = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send';
-      fallbackMailTo(toEmail, subject, dom.preview.innerText);
-    });
-  }
-
-  function fallbackMailTo(toEmail, subject, plainText) {
+    const btn  = byId('sendEmailBtn');
     const from = mailConfig.smtpUser || mailConfig.defaultFrom || '';
-    const link = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}${from ? `&cc=${encodeURIComponent(from)}` : ''}&body=${encodeURIComponent(plainText)}`;
-    window.location.href = link;
+    const html = buildEmailHTML(collectFormData());
+    const text = dom.preview.innerText;
+    const canRich = !!(navigator.clipboard && window.ClipboardItem);
+
+    const compose = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(toEmail)}`
+      + `&su=${encodeURIComponent(subject)}`
+      + (from ? `&cc=${encodeURIComponent(from)}` : '')
+      + (canRich ? '' : `&body=${encodeURIComponent(text)}`);
+
+    // Open synchronously to preserve the user gesture (avoids pop-up block).
+    window.open(compose, '_blank', 'noopener');
+
+    if (canRich) {
+      navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html':  new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob([text], { type: 'text/plain' })
+        })
+      ]).then(() => flashBtn(btn, 'Copied — paste into Gmail'))
+        .catch(() => flashBtn(btn, 'Opened in Gmail'));
+    }
   }
 
   /* ── ui: modal + event wiring ────────────────────────────────── */
