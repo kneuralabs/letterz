@@ -492,26 +492,24 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
 /* letter footer */
 .letter-footer {
   margin-top: auto;
-  padding-top: 1.05rem;
+  padding-top: .85rem;
   border-top: 1px solid var(--line);
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: .66rem;
+  font-size: .55rem;
   color: var(--muted);
   text-align: center;
-  letter-spacing: .03em;
-  line-height: 1.9;
+  letter-spacing: .02em;
+  line-height: 1.5;
 }
 .letter-footer b { color: var(--ink); font-weight: 700; }
 .letter-sysnote {
-  margin-top: 1.4rem;
-  padding-top: .85rem;
-  border-top: 1px dashed #d6dbe8;
+  margin-bottom: .55rem;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: .62rem;
+  font-size: .58rem;
   font-style: italic;
   color: var(--muted);
   text-align: center;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 /* ──────────────────── MODAL ──────────────────── */
