@@ -685,13 +685,13 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
           </div>
           <div class="fgrp" style="margin-bottom:0;">
             <label>Issue date</label>
-            <input type="date" id="issueDateField" value="2025-04-01">
+            <input type="date" id="issueDateField" value="2026-02-19" min="2026-02-19">
           </div>
         </div>
         <div id="dynamicFieldsContainer"></div>
         <div class="fgrp">
           <label>Additional notes / context</label>
-          <div class="rich-input" contenteditable="true" id="additionalNotesField" style="min-height:110px;">Equity vesting on a 4‑year schedule, performance‑based annual bonus.</div>
+          <div class="rich-input" contenteditable="true" id="additionalNotesField" style="min-height:110px;">All terms stated above are subject to the Company's prevailing policies and to applicable law. Please review carefully and contact hr@kneuralabs.com with any questions before signing.</div>
         </div>
       </div>
 
@@ -843,105 +843,121 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
   const letterTemplates = {
     contract: {
       fields: [
-        { name:"startDate",        label:"Contract start date",            type:"date", defaultVal:"2025-04-10" },
-        { name:"contractDuration", label:"Contract term",                  type:"text", defaultVal:"6 months" },
-        { name:"annualSalary",     label:"Total compensation during tenure",type:"text", defaultVal:"$155,000 + performance bonus" }
+        { name:"startDate",        label:"Contract start date",             type:"date", defaultVal:"2026-03-02" },
+        { name:"contractDuration", label:"Contract term",                   type:"text", defaultVal:"six (6) months, renewable" },
+        { name:"annualSalary",     label:"Total compensation during tenure",type:"text", defaultVal:"$155,000 per annum (pro-rated for the term), plus a discretionary performance bonus" }
       ],
       template: d => `<div><strong>EMPLOYMENT CONTRACT — FIXED TERM (RENEWABLE)</strong><br><br>
 <strong>Date:</strong> ${d.issueDate}<br>
 <strong>Employee:</strong> ${d.employeeName}<br>
 <strong>Role:</strong> ${d.employeeRole}<br>
 <strong>Signatory:</strong> ${d.managerName}<br><br>
-This Employment Contract is entered into by Kneuralabs ("the Company") and ${d.employeeName}.<br>
-• <strong>Start date:</strong> ${d.startDate}<br>
-• <strong>Term:</strong> ${d.contractDuration}, renewed every six (6) months subject to performance review. This is a fixed-term engagement; the Company does not offer permanent employment contracts.<br>
-• <strong>Total compensation during tenure:</strong> ${d.annualSalary}, plus equity under the Kneuralabs ESOP where applicable<br>
-• <strong>IP &amp; confidentiality:</strong> all models, architectures and research developed during the engagement remain the property of Kneuralabs<br>
+This Employment Contract ("Agreement") is made between Kneuralabs ("the Company") and ${d.employeeName} ("the Employee").<br><br>
+<strong>1. Term.</strong> Employment begins on ${d.startDate} for a fixed term of ${d.contractDuration}. The term may be renewed in writing every six (6) months at the Company's sole discretion, subject to a satisfactory performance review. This is a fixed-term engagement; it does not create permanent or indefinite employment, and no assurance of renewal is given.<br>
+<strong>2. Compensation.</strong> ${d.annualSalary}. All salary, bonus, equity and benefits are subject to applicable taxes and statutory deductions and to the Company's prevailing policies, which may change from time to time.<br>
+<strong>3. Duties &amp; conduct.</strong> The Employee shall perform the duties of the Role diligently, in good faith, and in compliance with all lawful Company policies and applicable law.<br>
+<strong>4. Confidentiality &amp; intellectual property.</strong> All models, code, architectures, research and other work product created in connection with the engagement are "works made for hire" and remain the sole property of Kneuralabs. Confidentiality and IP obligations survive termination.<br>
+<strong>5. Termination.</strong> Either party may terminate this Agreement on thirty (30) days' written notice; the Company may terminate immediately for cause. On termination the Employee shall return all Company property, data and confidential information.<br>
+<strong>6. Governing law.</strong> This Agreement is governed by the laws of the State of Connecticut, USA, constitutes the entire agreement between the parties and supersedes all prior understandings. If any provision is held invalid, the remainder shall continue in full force.<br>
 ${d.additionalNotes ? `<br><strong>Additional terms:</strong> ${d.additionalNotes}<br>` : ""}
 <br>Sincerely,<br>${d.managerName}<br>Kneuralabs</div>`
     },
     appointment: {
       fields: [
-        { name:"reportingManager", label:"Reporting manager",  type:"text", defaultVal:"Chief AI Officer" },
-        { name:"offerPackage",     label:"Offer package",      type:"text", defaultVal:"$140,000 base + equity" },
-        { name:"startDay",         label:"Proposed start date",type:"date", defaultVal:"2025-05-01" }
+        { name:"reportingManager", label:"Reporting manager",   type:"text", defaultVal:"Chief AI Officer" },
+        { name:"offerPackage",     label:"Offer package",       type:"text", defaultVal:"$140,000 per annum, plus discretionary equity under the Kneuralabs ESOP" },
+        { name:"startDay",         label:"Proposed start date", type:"date", defaultVal:"2026-03-16" }
       ],
       template: d => `<div><strong>APPOINTMENT / OFFER LETTER</strong><br><br>
 <strong>Date:</strong> ${d.issueDate}<br>
 <strong>To:</strong> ${d.employeeName}<br>
 <strong>Role:</strong> ${d.employeeRole}<br><br>
 Dear ${d.employeeName},<br><br>
-We are pleased to offer you the position of ${d.employeeRole} at Kneuralabs, reporting to the ${d.reportingManager}. Your proposed start date is ${d.startDay}.<br>
-<strong>Compensation:</strong> ${d.offerPackage}<br>
+We are pleased to offer you the position of ${d.employeeRole} at Kneuralabs, reporting to the ${d.reportingManager}, with a proposed start date of ${d.startDay}.<br><br>
+<strong>1. Compensation.</strong> ${d.offerPackage}. All bonus, equity and benefits are discretionary and subject to the Company's prevailing policies and applicable taxes.<br>
+<strong>2. Conditions.</strong> This offer is contingent upon satisfactory background, reference and right-to-work verification, and upon your acceptance of the Company's confidentiality and intellectual-property terms. Employment is offered on a fixed-term, renewable basis and is not a guarantee of permanent employment.<br>
+<strong>3. Validity.</strong> This offer is open for acceptance for seven (7) days from the date above. The Company reserves the right to amend or withdraw this offer at any time prior to your acceptance.<br>
+<strong>4. Governing law.</strong> This letter is governed by the laws of the State of Connecticut, USA, and constitutes the entire offer, superseding any prior discussions.<br>
 ${d.additionalNotes ? `<br><em>${d.additionalNotes}</em><br>` : ""}
-<br>We look forward to having you on the team.<br><br>Best regards,<br>${d.managerName}</div>`
+<br>We look forward to welcoming you to the team.<br><br>Best regards,<br>${d.managerName}<br>Kneuralabs</div>`
     },
     termination: {
       fields: [
-        { name:"terminationReason", label:"Reason",            type:"text", defaultVal:"Strategic restructuring" },
-        { name:"lastDay",           label:"Last working day",  type:"date", defaultVal:"2025-05-15" },
-        { name:"severanceInfo",     label:"Severance",         type:"text", defaultVal:"2 months' salary + medical cover" }
+        { name:"terminationReason", label:"Reason",           type:"text", defaultVal:"Strategic restructuring of the team" },
+        { name:"lastDay",           label:"Last working day", type:"date", defaultVal:"2026-03-31" },
+        { name:"severanceInfo",     label:"Final settlement", type:"text", defaultVal:"two (2) months' salary in lieu of notice, subject to applicable deductions" }
       ],
       template: d => `<div><strong>TERMINATION OF EMPLOYMENT</strong><br><br>
 <strong>Date:</strong> ${d.issueDate}<br>
 <strong>To:</strong> ${d.employeeName}<br><br>
-This letter confirms the termination of your employment with Kneuralabs, effective ${d.lastDay}.<br>
-<strong>Reason:</strong> ${d.terminationReason}<br>
-<strong>Severance:</strong> ${d.severanceInfo}<br>
+This letter confirms that your employment with Kneuralabs will end effective ${d.lastDay}.<br><br>
+<strong>1. Reason.</strong> ${d.terminationReason}. This decision does not reflect any allegation of misconduct unless separately notified to you in writing.<br>
+<strong>2. Final settlement.</strong> ${d.severanceInfo}. Your final dues, less applicable deductions and the recovery of any Company property or advances, will be settled in accordance with applicable law.<br>
+<strong>3. Continuing obligations.</strong> Your confidentiality, non-disclosure and intellectual-property obligations survive the end of employment. You agree to return all Company property and data on or before your last working day.<br>
+<strong>4. Governing law.</strong> This letter is governed by the laws of the State of Connecticut, USA.<br>
 ${d.additionalNotes ? `<br>${d.additionalNotes}<br>` : ""}
-<br>Regards,<br>${d.managerName}</div>`
+<br>We thank you for your contributions and wish you well.<br><br>Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     },
     promotion: {
       fields: [
-        { name:"newTitle",       label:"New title",        type:"text", defaultVal:"Lead AI Architect (L6)" },
-        { name:"newComp",        label:"New salary / equity",type:"text",defaultVal:"$185,000 + 0.25% equity" },
-        { name:"effectivePromo", label:"Effective date",   type:"date", defaultVal:"2025-04-20" }
+        { name:"newTitle",       label:"New title",          type:"text", defaultVal:"Lead AI Architect (Level 6)" },
+        { name:"newComp",        label:"New salary / equity",type:"text", defaultVal:"$185,000 per annum, plus discretionary equity under the Kneuralabs ESOP" },
+        { name:"effectivePromo", label:"Effective date",     type:"date", defaultVal:"2026-03-02" }
       ],
       template: d => `<div><strong>PROMOTION LETTER</strong><br><br>
 <strong>Date:</strong> ${d.issueDate}<br>
 <strong>Employee:</strong> ${d.employeeName}<br>
 <strong>Current role:</strong> ${d.employeeRole}<br><br>
-We are pleased to confirm your promotion to ${d.newTitle}, effective ${d.effectivePromo}.<br>
-<strong>New compensation:</strong> ${d.newComp}<br>
+We are pleased to confirm your promotion to ${d.newTitle}, effective ${d.effectivePromo}.<br><br>
+<strong>1. Compensation.</strong> ${d.newComp}. All revised compensation, bonus and equity are discretionary and subject to the Company's prevailing policies and applicable taxes.<br>
+<strong>2. Other terms.</strong> All other terms of your existing engagement remain unchanged and in full force. This promotion does not alter the fixed-term nature of your engagement and creates no guarantee of continued or permanent employment.<br>
+<strong>3. Governing law.</strong> This letter is governed by the laws of the State of Connecticut, USA, and supersedes any prior discussions regarding your role or compensation.<br>
 ${d.additionalNotes ? `<br>${d.additionalNotes}<br>` : ""}
-<br>Congratulations,<br>${d.managerName}</div>`
+<br>Congratulations,<br>${d.managerName}<br>Kneuralabs</div>`
     },
     nda: {
       fields: [
-        { name:"otherParty",       label:"Other party",          type:"text", defaultVal:"Neural Tech Partners" },
-        { name:"purpose",          label:"Purpose",              type:"text", defaultVal:"Evaluation of neural inference API" },
-        { name:"confidentialTerm", label:"Confidentiality term", type:"text", defaultVal:"3 years" }
+        { name:"otherParty",       label:"Other party",          type:"text", defaultVal:"Neural Tech Partners LLC" },
+        { name:"purpose",          label:"Purpose",              type:"text", defaultVal:"evaluation of a potential commercial collaboration" },
+        { name:"confidentialTerm", label:"Confidentiality term", type:"text", defaultVal:"three (3) years from the date of disclosure" }
       ],
       template: d => `<div><strong>MUTUAL NON-DISCLOSURE AGREEMENT</strong><br><br>
-Between Kneuralabs and ${d.otherParty}.<br>
-<strong>Purpose:</strong> ${d.purpose}<br>
-<strong>Term:</strong> confidential information remains protected for ${d.confidentialTerm}<br>
-<strong>Representative:</strong> ${d.employeeName} (${d.employeeRole})<br>
+<strong>Date:</strong> ${d.issueDate}<br><br>
+This Mutual Non-Disclosure Agreement ("Agreement") is entered into between Kneuralabs and ${d.otherParty} (each a "Party").<br><br>
+<strong>1. Purpose.</strong> ${d.purpose}.<br>
+<strong>2. Confidential information.</strong> Each Party may disclose proprietary or confidential information. The receiving Party shall use such information solely for the Purpose, protect it with at least reasonable care, and not disclose it to any third party without the disclosing Party's prior written consent.<br>
+<strong>3. Term.</strong> The confidentiality obligations remain in force for ${d.confidentialTerm}.<br>
+<strong>4. No license or obligation.</strong> Nothing in this Agreement grants any license or intellectual-property right, or obligates either Party to enter into any further agreement. All disclosed information remains the property of the disclosing Party.<br>
+<strong>5. Governing law.</strong> This Agreement is governed by the laws of the State of Connecticut, USA. If any provision is held invalid, the remainder shall continue in full force.<br>
+Authorised representative for Kneuralabs: ${d.employeeName} (${d.employeeRole}).<br>
 ${d.additionalNotes ? `<br>${d.additionalNotes}<br>` : ""}
-<br>Signed,<br>${d.managerName}</div>`
+<br>Signed for Kneuralabs,<br>${d.managerName}</div>`
     },
     sow: {
       fields: [
-        { name:"projectName",  label:"Project name",    type:"text", defaultVal:"Edge Neural Core" },
-        { name:"deliverables", label:"Key deliverables",type:"text", defaultVal:"Optimized model + documentation" },
-        { name:"deadline",     label:"Deadline",        type:"date", defaultVal:"2025-07-30" }
+        { name:"projectName",  label:"Project name",     type:"text", defaultVal:"Edge Neural Core" },
+        { name:"deliverables", label:"Key deliverables", type:"text", defaultVal:"an optimised inference model and accompanying technical documentation" },
+        { name:"deadline",     label:"Deadline",         type:"date", defaultVal:"2026-05-29" }
       ],
       template: d => `<div><strong>STATEMENT OF WORK</strong><br><br>
-<strong>Project:</strong> ${d.projectName}<br>
-<strong>Consultant:</strong> ${d.employeeName}<br>
-<strong>Deliverables:</strong> ${d.deliverables}<br>
-<strong>Due date:</strong> ${d.deadline}<br>
-<strong>Manager:</strong> ${d.managerName}<br>
+<strong>Date:</strong> ${d.issueDate}<br><br>
+This Statement of Work ("SOW") is issued by Kneuralabs ("the Company") to ${d.employeeName} (${d.employeeRole}) ("the Consultant").<br><br>
+<strong>1. Project.</strong> ${d.projectName}.<br>
+<strong>2. Deliverables.</strong> ${d.deliverables}, to be completed by ${d.deadline}. Acceptance is subject to the Company's written approval.<br>
+<strong>3. Fees.</strong> Fees are payable only against accepted deliverables and valid invoices, and are exclusive of applicable taxes.<br>
+<strong>4. Intellectual property.</strong> All deliverables, work product and related intellectual property are works made for hire and vest exclusively in Kneuralabs upon creation; the Consultant assigns all rights therein to the Company.<br>
+<strong>5. Independent contractor &amp; confidentiality.</strong> The Consultant acts as an independent contractor and shall maintain strict confidentiality; nothing herein creates employment, partnership or agency.<br>
+<strong>6. Governing law.</strong> This SOW is governed by the laws of the State of Connecticut, USA, and supersedes any prior understanding for this project.<br>
 ${d.additionalNotes ? `<br>${d.additionalNotes}<br>` : ""}
-<br>IP ownership: Kneuralabs.</div>`
+<br>For Kneuralabs,<br>${d.managerName}</div>`
     },
     invoice: {
       fields: [
-        { name:"invoiceNumber", label:"Invoice number",     type:"text", defaultVal:"KNL-INV-1001" },
-        { name:"billTo",        label:"Bill to",            type:"text", defaultVal:"Neural Tech Partners, Hartford, CT" },
-        { name:"invoiceAmount", label:"Amount due",         type:"text", defaultVal:"$4,500.00" },
-        { name:"dueDate",       label:"Due date",           type:"date", defaultVal:"2025-05-15" },
-        { name:"invoiceItems",  label:"Items / description",type:"text", defaultVal:"Consulting services — April 2025" }
+        { name:"invoiceNumber", label:"Invoice number",      type:"text", defaultVal:"KNL-INV-1001" },
+        { name:"billTo",        label:"Bill to",             type:"text", defaultVal:"Neural Tech Partners LLC, 345 Buckland Hills Dr, Manchester, CT 06042, USA" },
+        { name:"invoiceAmount", label:"Amount due",          type:"text", defaultVal:"$4,500.00 (exclusive of applicable taxes)" },
+        { name:"dueDate",       label:"Due date",            type:"date", defaultVal:"2026-03-05" },
+        { name:"invoiceItems",  label:"Items / description", type:"text", defaultVal:"AI consulting services rendered — February 2026" }
       ],
       template: d => `<div><strong>INVOICE</strong><br><br>
 <strong>Invoice #:</strong> ${d.invoiceNumber}<br>
@@ -950,19 +966,21 @@ ${d.additionalNotes ? `<br>${d.additionalNotes}<br>` : ""}
 <strong>Bill to:</strong> ${d.billTo}<br>
 <strong>Prepared by:</strong> ${d.employeeName} (${d.employeeRole})<br><br>
 <strong>Description:</strong> ${d.invoiceItems}<br>
-<strong>Amount due:</strong> ${d.invoiceAmount}<br>
+<strong>Amount due:</strong> ${d.invoiceAmount}<br><br>
+Payment is due by the due date stated above. Amounts are exclusive of applicable taxes unless otherwise stated. Overdue amounts may attract interest at the maximum rate permitted by law. All work and deliverables remain the property of Kneuralabs until payment is received in full.<br>
 ${d.additionalNotes ? `<br><strong>Notes:</strong> ${d.additionalNotes}<br>` : ""}
-<br>Please remit payment by the due date above.<br><br>Thank you,<br>${d.managerName}<br>Kneuralabs</div>`
+<br>Thank you for your business.<br><br>${d.managerName}<br>Kneuralabs</div>`
     },
     general: {
       fields: [
-        { name:"letterSubject",    label:"Subject",           type:"text", defaultVal:"General correspondence" },
+        { name:"letterSubject",    label:"Subject",            type:"text", defaultVal:"Letter of Confirmation" },
         { name:"recipientAddress", label:"Recipient / address",type:"text", defaultVal:"To whom it may concern" }
       ],
       template: d => `<div><strong>${(d.letterSubject || '').toUpperCase()}</strong><br><br>
 <strong>Date:</strong> ${d.issueDate}<br><br>
 ${d.recipientAddress},<br><br>
-${d.additionalNotes || 'This letter is issued by Kneuralabs for the purpose stated above.'}<br><br>
+${d.additionalNotes || 'This letter is issued by Kneuralabs in relation to the subject stated above.'}<br><br>
+This letter is issued by Kneuralabs for the purpose stated above and creates no legal obligation or representation beyond its express terms. It is governed by the laws of the State of Connecticut, USA.<br><br>
 Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     }
   };
@@ -980,7 +998,7 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
       group.appendChild(label);
       if (field.type === 'date') {
         const inp = document.createElement('input');
-        inp.type = 'date'; inp.name = field.name; inp.className = 'dynamic-date'; inp.value = field.defaultVal;
+        inp.type = 'date'; inp.name = field.name; inp.className = 'dynamic-date'; inp.value = field.defaultVal; inp.min = '2026-02-19';
         inp.addEventListener('change', updatePreview);
         group.appendChild(inp);
       } else {
@@ -1006,7 +1024,9 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     const [y, m, d] = iso.split('-').map(Number);
     const dt = new Date(y, m - 1, d);
     if (isNaN(dt)) return iso;
-    return dt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    // Formal DD/MMM/YYYY form, e.g. 19/Feb/2026.
+    const mon = dt.toLocaleDateString('en-US', { month: 'short' });
+    return `${String(d).padStart(2, '0')}/${mon}/${y}`;
   }
 
   function collectFormData() {
