@@ -583,7 +583,12 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
   .arow { flex-wrap: wrap; }
   .brand-sub, .brand-pipe { display: none; }
 }
+
+/* PDF export clone (off-screen): footer sticks to bottom of the A4 page */
+.pdf-export .letter-content-display { display: flex; flex-direction: column; min-height: 862px; }
+.pdf-export .letter-footer { margin-top: auto; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -695,23 +700,10 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
     <!-- action bar -->
     <div class="action-bar">
       <div class="arow">
-        <button id="copyLetterBtn" class="btn btn-secondary btn-full">
-          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          Copy Letter
+        <button id="downloadPdfBtn" class="btn btn-primary btn-full">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download as PDF
         </button>
-        <button id="printLetterBtn" class="btn btn-secondary btn-full">
-          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          Print / PDF
-        </button>
-      </div>
-      <div class="arow">
-        <div class="send-row">
-          <input type="email" id="sendToEmail" placeholder="recipient@example.com">
-          <button id="sendEmailBtn" class="btn btn-primary">
-            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            Send
-          </button>
-        </div>
       </div>
     </div>
 
@@ -803,7 +795,6 @@ select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var
     preview:           byId('letterPreview'),
     liveBadge:         byId('liveBadge'),
     editorBadge:       byId('editorBadge'),
-    sendToEmail:       byId('sendToEmail'),
     toolbar:           byId('globalToolbar'),
     modal:             byId('settingsModal'),
   };
@@ -1030,25 +1021,6 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     return `<div class="letterhead"><div class="lh-row"><div class="lh-ident"><img class="lh-mark" src="${logoDataUrl}" alt=""><span class="lh-name">Kneuralabs</span></div><address class="lh-contact">hello@kneuralabs.com<br>+91 98871 74100<br><a href="https://www.kneuralabs.com">www.kneuralabs.com</a></address></div><hr class="lh-rule"></div>`;
   }
 
-  // Fully inline-styled rendition of the live preview, for pasting into an
-  // email client (which strips <style>/classes). Mirrors the preview look.
-  function buildEmailHTML(data) {
-    const tpl = letterTemplates[data.letterType];
-    if (!tpl) return '';
-    const head =
-      `<table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:28px;"><tr>`
-      + `<td style="vertical-align:middle;"><img src="${logoDataUrl}" width="42" height="42" style="border-radius:9px;display:inline-block;vertical-align:middle;"><span style="font-family:Helvetica,Arial,sans-serif;font-size:23px;letter-spacing:-.02em;color:#12182a;vertical-align:middle;padding-left:12px;">Kneuralabs</span></td>`
-      + `<td style="text-align:right;font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#8892aa;line-height:1.8;white-space:nowrap;">hello@kneuralabs.com<br>+91 98871 74100<br><a href="https://www.kneuralabs.com" style="color:#8892aa;text-decoration:none;">www.kneuralabs.com</a></td>`
-      + `</tr></table><div style="height:1px;background:#e4e7ef;margin:0 0 28px;"></div>`;
-    const foot =
-      `<div style="margin-top:40px;padding-top:16px;border-top:1px solid #e4e7ef;font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#8892aa;text-align:center;line-height:1.9;">`
-      + `<b style="color:#12182a;">Connecticut</b>&nbsp;345 Buckland Hills Dr, Manchester, CT 06042-8704, USA<br>`
-      + `<b style="color:#12182a;">Kolkata</b>&nbsp;12/1J Chanditala Lane, Tollygunge, Kolkata 700040, India</div>`;
-    return `<div style="max-width:680px;margin:0 auto;background:#fff;font-family:Georgia,'Times New Roman',serif;color:#1a1e30;line-height:1.85;font-size:15px;">`
-      + `<div style="height:4px;background:linear-gradient(90deg,#1e57a4 0%,#1e57a4 62%,#c0392b 62%);"></div>`
-      + `<div style="padding:34px 40px 30px;">${head}${tpl.template(data)}${foot}</div></div>`;
-  }
-
   function updatePreview() {
     const data = collectFormData();
     const tpl  = letterTemplates[data.letterType];
@@ -1060,50 +1032,30 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     dom.editorBadge.innerText = label;
   }
 
-  /* ── actions: copy + print ───────────────────────────────────── */
-  function copyRichLetter() {
-    const html = dom.preview.innerHTML;
-    const text = dom.preview.innerText;
-    navigator.clipboard.write([
-      new ClipboardItem({
-        'text/html':  new Blob([html], { type: 'text/html' }),
-        'text/plain': new Blob([text], { type: 'text/plain' })
-      })
-    ]).then(() => alert('Letter copied to clipboard.'))
-      .catch(() => alert('Copy failed — try selecting and copying manually.'));
-  }
+  /* ── actions: download as PDF ────────────────────────────────── */
+  // Render an off-screen WYSIWYG clone of the preview (identical px CSS,
+  // footer pinned to the bottom of the A4 page) and save it straight to a
+  // PDF file via html2pdf — no print dialog, a direct download.
+  function downloadPdf() {
+    const btn  = byId('downloadPdfBtn');
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.textContent = 'Preparing PDF…';
 
-  function printLetter() {
-    const content = dom.preview.innerHTML;
-    const win = window.open('', '_blank');
-    if (!win) { alert('Print was blocked by your browser. Please allow pop-ups for this site and try again.'); return; }
-    win.document.write(`<!DOCTYPE html><html><head><title>Kneuralabs Letter</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-<style>
-  /* WYSIWYG clone of the on-screen preview: identical px CSS, scaled
-     from the 700px-wide preview paper to 210mm A4 via a single zoom. */
-  @page{size:A4;margin:0;}
-  *{box-sizing:border-box;margin:0;padding:0;}
-  html{font-size:16px;}
-  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#fff;width:700px;zoom:1.1339;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .letter-stripe{height:4px;background:linear-gradient(90deg,#1e57a4 0%,#1e57a4 62%,#c0392b 62%);}
-  .letter-inner{padding:3.85rem 4.2rem 3.5rem;}
-  .letterhead{margin-bottom:3.85rem;white-space:normal;break-inside:avoid;}
-  .lh-row{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:1.5rem;margin-bottom:1.25rem;}
-  .lh-ident{display:flex;align-items:center;gap:.85rem;}
-  .lh-mark{width:42px;height:42px;border-radius:9px;display:block;flex-shrink:0;}
-  .lh-name{font-family:'Inter','Plus Jakarta Sans',sans-serif;font-size:1.45rem;font-weight:400;letter-spacing:-.02em;color:#12182a;}
-  .lh-contact{font-family:'Inter','Plus Jakarta Sans',sans-serif;font-size:.68rem;color:#8892aa;letter-spacing:.02em;line-height:1.8;text-align:right;font-style:normal;}
-  .lh-contact a{color:#8892aa;text-decoration:none;}
-  .lh-contact b{color:#12182a;font-weight:700;}
-  .lh-rule{height:1px;background:#e4e7ef;border:none;display:block;width:100%;}
-  .letter-content-display{font-family:'Cormorant Garamond',Georgia,serif;line-height:1.85;font-size:.735rem;color:#1a1e30;white-space:normal;display:flex;flex-direction:column;min-height:862px;}
-  .letter-footer{margin-top:auto;padding-top:1.05rem;border-top:1px solid #e4e7ef;font-family:'Inter','Plus Jakarta Sans',sans-serif;font-size:.66rem;color:#8892aa;text-align:center;letter-spacing:.03em;line-height:1.9;break-inside:avoid;}
-  .letter-footer b{color:#12182a;font-weight:700;}
-  strong{font-weight:700;}
-</style></head><body><div class="letter-stripe"></div><div class="letter-inner"><div class="letter-content-display">${content}</div></div></body></html>`);
-    win.document.close();
-    win.print();
+    const wrap = document.createElement('div');
+    wrap.className = 'pdf-export';
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:700px;font-family:\'Plus Jakarta Sans\',system-ui,sans-serif;font-size:16px;background:#fff;';
+    wrap.innerHTML = `<div class="letter-stripe"></div><div class="letter-inner"><div class="letter-content-display">${dom.preview.innerHTML}</div></div>`;
+    document.body.appendChild(wrap);
+
+    const done = () => { document.body.removeChild(wrap); btn.disabled = false; btn.innerHTML = orig; };
+    html2pdf().set({
+      margin: 0,
+      filename: 'Kneuralabs-Letter.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'px', format: [700, 990], orientation: 'portrait', hotfixes: ['px_scaling'] }
+    }).from(wrap).save().then(done).catch(done);
   }
 
   /* ── mail: config persistence + sending ──────────────────────── */
@@ -1136,48 +1088,6 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mailConfig));
   }
 
-  // Briefly swap a button's label, then restore its original markup.
-  function flashBtn(btn, msg, ms) {
-    const orig = btn.innerHTML;
-    btn.disabled = true;
-    btn.textContent = msg;
-    setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, ms || 2800);
-  }
-
-  // Compose the letter as a rich-text email that looks exactly like the
-  // preview. The formatted HTML is placed on the clipboard and Gmail's
-  // compose window is opened with the recipient/subject prefilled — one
-  // paste (Ctrl/Cmd+V) drops in the letter as previewed. Where rich
-  // clipboard isn't available, we fall back to a plain-text mailto body.
-  function sendEmail() {
-    const toEmail = dom.sendToEmail.value.trim();
-    if (!toEmail) { alert('Please enter a recipient email address.'); return; }
-    const subject = `Kneuralabs Letter — ${dom.letterType.options[dom.letterType.selectedIndex].text}`;
-    const btn  = byId('sendEmailBtn');
-    const from = mailConfig.smtpUser || mailConfig.defaultFrom || '';
-    const html = buildEmailHTML(collectFormData());
-    const text = dom.preview.innerText;
-    const canRich = !!(navigator.clipboard && window.ClipboardItem);
-
-    const compose = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(toEmail)}`
-      + `&su=${encodeURIComponent(subject)}`
-      + (from ? `&cc=${encodeURIComponent(from)}` : '')
-      + (canRich ? '' : `&body=${encodeURIComponent(text)}`);
-
-    // Open synchronously to preserve the user gesture (avoids pop-up block).
-    window.open(compose, '_blank', 'noopener');
-
-    if (canRich) {
-      navigator.clipboard.write([
-        new ClipboardItem({
-          'text/html':  new Blob([html], { type: 'text/html' }),
-          'text/plain': new Blob([text], { type: 'text/plain' })
-        })
-      ]).then(() => flashBtn(btn, 'Copied — paste into Gmail'))
-        .catch(() => flashBtn(btn, 'Opened in Gmail'));
-    }
-  }
-
   /* ── ui: modal + event wiring ────────────────────────────────── */
   const setModal = (open) => { dom.modal.style.display = open ? 'flex' : 'none'; };
   byId('settingsBtn').addEventListener('click', () => setModal(true));
@@ -1189,9 +1099,7 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     rebuildDynamicFields(dom.letterType.value);
     updatePreview();
   });
-  byId('copyLetterBtn').addEventListener('click', copyRichLetter);
-  byId('printLetterBtn').addEventListener('click', printLetter);
-  byId('sendEmailBtn').addEventListener('click', sendEmail);
+  byId('downloadPdfBtn').addEventListener('click', downloadPdf);
   document.querySelectorAll('.rich-input').forEach((r) => r.addEventListener('input', updatePreview));
   dom.issueDate.addEventListener('change', updatePreview);
   dom.managerName.addEventListener('change', updatePreview);
