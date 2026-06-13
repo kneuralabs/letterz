@@ -42,7 +42,7 @@
     const slug = (s) => (s || '').replace(/<[^>]+>/g, ' ').replace(/&[^;]+;/g, ' ')
       .trim().replace(/[^\w]+/g, '-').replace(/^-+|-+$/g, '');
     const type  = slug(currentTypeLabel());
-    const party = slug(getRichHTML('employeeNameField')) || 'Letter';
+    const party = slug(getRichHTML('employeeFirstField') + '-' + getRichHTML('employeeLastField')) || 'Letter';
     const date  = formatDate(dom.issueDate.value).replace(/\//g, '-');
     return `Kneuralabs_${type}_${party}_${date}`.replace(/_+/g, '_');
   }
@@ -84,17 +84,17 @@
   const letterTemplates = {
     contract: {
       fields: [
-        { name:"startDate",        label:"Contract start date",             type:"date", defaultVal:"2026-03-02" },
-        { name:"contractDuration", label:"Contract term",                   type:"text", defaultVal:"six (6) months, renewable" },
-        { name:"annualSalary",     label:"Total compensation during tenure",type:"text", defaultVal:"$155,000 per annum (pro-rated for the term), plus a discretionary performance bonus" }
+        { name:"startDate",          label:"Contract start date",             type:"date", defaultVal:"2026-03-02" },
+        { name:"contractTermMonths", label:"Contract term (months)",          type:"text", defaultVal:"12" },
+        { name:"annualSalary",       label:"Total compensation during tenure",type:"text", defaultVal:"$155,000 per annum (pro-rated for the term), plus a discretionary performance bonus" }
       ],
-      template: d => `<div><strong>EMPLOYMENT CONTRACT — FIXED TERM (RENEWABLE)</strong><br><br>
+      template: d => `<div><strong>EMPLOYMENT CONTRACT</strong><br><br>
 <strong>Date:</strong> ${d.issueDate}<br>
 <strong>Employee:</strong> ${d.employeeName}<br>
 <strong>Role:</strong> ${d.employeeRole}<br>
 <strong>Signatory:</strong> ${d.managerName}<br><br>
 This Employment Contract ("Agreement") is made between Kneuralabs ("the Company") and ${d.employeeName} ("the Employee").<br><br>
-<strong>1. Term.</strong> Employment begins on ${d.startDate} for a fixed term of ${d.contractDuration}. The term may be renewed in writing every six (6) months at the Company's sole discretion, subject to a satisfactory performance review. This fixed-term engagement creates no permanent or indefinite employment, and no renewal is assured.<br>
+<strong>1. Term.</strong> Employment begins on ${d.startDate} and continues for a fixed term of ${d.contractTermMonths} month(s), concluding on ${d.endDate} unless extended in writing by the Company. This fixed-term engagement creates no permanent or indefinite employment.<br>
 <strong>2. Compensation.</strong> ${d.annualSalary}. All salary, bonus, equity and benefits are subject to applicable taxes and statutory deductions and to the Company's prevailing policies, which may change from time to time.<br>
 <strong>3. Duties &amp; conduct.</strong> The Employee shall perform the duties of the Role diligently, in good faith, and in compliance with all lawful Company policies and applicable law.<br>
 <strong>4. Confidentiality &amp; intellectual property.</strong> All models, code, architectures, research and other work product created in connection with the engagement are "works made for hire" and remain the sole property of Kneuralabs. Confidentiality and IP obligations survive termination.<br>
@@ -270,13 +270,31 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
     return `${String(d).padStart(2, '0')}/${mon}/${y}`;
   }
 
+  // Add a whole number of months to an ISO date and return the long form.
+  // Used to derive a contract end date from its start date + term.
+  function addMonths(iso, months) {
+    if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso) || !months) return '';
+    const [y, m, d] = iso.split('-').map(Number);
+    const dt = new Date(y, m - 1 + months, d);
+    if (isNaN(dt)) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    return formatDate(`${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`);
+  }
+
   function collectFormData() {
+    // Full party name = prefix + first + last (each optional).
+    const prefixEl = byId('employeePrefixField');
+    const prefix   = prefixEl ? prefixEl.value : '';
+    const fullName = [prefix, getRichHTML('employeeFirstField'), getRichHTML('employeeLastField')]
+      .map((s) => (s || '').trim()).filter(Boolean).join(' ') || 'Employee';
+    // Signatory is "Name, Title"; render the title on its own line.
+    const mgrRaw = (dom.managerName.tagName === 'SELECT' ? dom.managerName.value : getRichHTML('managerNameField')) || 'Manager';
+    const ci = mgrRaw.indexOf(',');
     const data = {
       letterType:      dom.letterType.value,
-      employeeName:    getRichHTML('employeeNameField') || 'Employee',
+      employeeName:    fullName,
       employeeRole:    getRichHTML('employeeRoleField') || 'Role',
-      // managerName is a <select>; read its value (falls back defensively).
-      managerName:     (dom.managerName.tagName === 'SELECT' ? dom.managerName.value : getRichHTML('managerNameField')) || 'Manager',
+      managerName:     ci >= 0 ? `${mgrRaw.slice(0, ci).trim()}<br>${mgrRaw.slice(ci + 1).trim()}` : mgrRaw,
       additionalNotes: getRichHTML('additionalNotesField') || '',
       issueDate:       formatDate(dom.issueDate.value),
     };
@@ -285,20 +303,27 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
       const name = div.getAttribute('data-dyn-name');
       if (name) data[name] = div.innerHTML;
     });
+    // Derive the contract end date from its start date + term in months.
+    const startEl = document.querySelector('.dynamic-date[name="startDate"]');
+    if (startEl) {
+      const months = parseInt(String(data.contractTermMonths || '').replace(/[^\d]/g, ''), 10);
+      data.endDate = addMonths(startEl.value, months) || '—';
+    }
     return data;
   }
 
   // Ultra-minimal letterhead, shared by screen preview and print.
   function getLetterhead() {
-    return `<div class="letterhead"><div class="lh-row"><div class="lh-ident"><img class="lh-mark" src="${logoDataUrl}" alt=""><span class="lh-name">Kneuralabs</span></div><address class="lh-contact">hello@kneuralabs.com<br>+91 98871 74100<br><a href="https://www.kneuralabs.com">www.kneuralabs.com</a></address></div><hr class="lh-rule"></div>`;
+    return `<div class="letterhead"><div class="lh-row"><div class="lh-ident"><img class="lh-mark" src="${logoDataUrl}" alt=""><span class="lh-name">Kneuralabs</span></div><address class="lh-contact">hello@kneuralabs.com<br>+91 98 741 741 00 / +1 (602) 349 6753<br><a href="https://www.kneuralabs.com">www.kneuralabs.com</a></address></div><hr class="lh-rule"></div>`;
   }
 
   function updatePreview() {
     const data = collectFormData();
     const tpl  = letterTemplates[data.letterType];
     if (!tpl) return;
+    const sysNote = `<div class="letter-sysnote">This is a system-generated document issued by Kneuralabs and is valid without a physical signature. It carries the same authority as an originally signed letter and may be relied upon as such for all purposes.</div>`;
     const footer = `<div class="letter-footer"><b>Connecticut</b>&nbsp;345 Buckland Hills Dr, Manchester, CT 06042-8704, USA<br><b>Kolkata</b>&nbsp;12/1J Chanditala Lane, Tollygunge, Kolkata 700040, India</div>`;
-    dom.preview.innerHTML = getLetterhead() + tpl.template(data) + footer;
+    dom.preview.innerHTML = getLetterhead() + tpl.template(data) + sysNote + footer;
     const label = currentTypeLabel();
     dom.liveBadge.innerText = label;
     dom.editorBadge.innerText = label;
@@ -343,6 +368,7 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
   .letter-content-display{font-family:'Cormorant Garamond',Georgia,serif;line-height:1.58;font-size:.735rem;color:#1a1e30;white-space:normal;display:flex;flex-direction:column;min-height:905px;}
   .letter-footer{margin-top:auto;padding-top:1.05rem;border-top:1px solid #e4e7ef;font-family:'Inter','Plus Jakarta Sans',sans-serif;font-size:.66rem;color:#8892aa;text-align:center;letter-spacing:.03em;line-height:1.9;break-inside:avoid;}
   .letter-footer b{color:#12182a;font-weight:700;}
+  .letter-sysnote{margin-top:1.4rem;padding-top:.85rem;border-top:1px dashed #d6dbe8;font-family:'Inter','Plus Jakarta Sans',sans-serif;font-size:.6rem;font-style:italic;color:#8892aa;line-height:1.6;text-align:center;break-inside:avoid;}
   strong{font-weight:700;}
 </style></head><body><div style="height:4px;background:linear-gradient(90deg,#1e57a4 0%,#1e57a4 62%,#c0392b 62%);"></div><div class="letter-inner"><div class="letter-content-display">${dom.preview.innerHTML}</div></div>
 <script>window.onload=function(){setTimeout(function(){window.focus();window.print();},350);};<\/script>
@@ -397,6 +423,8 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
   document.querySelectorAll('.rich-input').forEach((r) => r.addEventListener('input', updatePreview));
   dom.issueDate.addEventListener('change', updatePreview);
   dom.managerName.addEventListener('change', updatePreview);
+  const prefixEl = byId('employeePrefixField');
+  if (prefixEl) prefixEl.addEventListener('change', updatePreview);
 
   /* ── preview scaler: fit fixed 700×990 paper into its pane ───── */
   const paperWrap = document.querySelector('.letter-wrap');
