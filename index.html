@@ -1050,29 +1050,54 @@ Regards,<br>${d.managerName}<br>Kneuralabs</div>`
   function downloadPdf() {
     const btn  = byId('downloadPdfBtn');
     const orig = btn.innerHTML;
-    // If the CDN library didn't load, fall back to the browser's
-    // print-to-PDF so the action still produces a PDF.
-    if (typeof html2pdf === 'undefined') { printToPdf(); return; }
+    // Resolve the bundled engines. html2pdf.bundle exposes html2canvas and
+    // jsPDF as globals; if nothing loaded at all, fall back to the print dialog.
+    const h2c  = window.html2canvas;
+    const JsPDF = window.jspdf && window.jspdf.jsPDF;
+    if (typeof html2pdf === 'undefined' && !h2c) { printToPdf(); return; }
     btn.disabled = true;
     btn.textContent = 'Preparing PDF…';
 
-    // Proven structure: plain inline-styled stripe + padding wrapper (no
-    // overflow/flex container) so html2canvas captures the full content.
+    // On-page (not position:fixed) clone so html2canvas reliably captures it.
+    // Fixed/off-screen clones are the root cause of blank output: html2canvas
+    // re-renders fixed nodes during its DOM clone and drops their contents.
+    // Here it sits behind the UI (z-index:-1) and is removed after capture.
     const wrap = document.createElement('div');
     wrap.className = 'pdf-export';
-    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:700px;font-family:\'Plus Jakarta Sans\',system-ui,sans-serif;font-size:16px;background:#fff;';
+    wrap.style.cssText = 'position:absolute;left:0;top:0;z-index:-1;width:700px;font-family:\'Plus Jakarta Sans\',system-ui,sans-serif;font-size:16px;background:#fff;';
     wrap.innerHTML = `<div style="height:4px;background:linear-gradient(90deg,#1e57a4 0%,#1e57a4 62%,#c0392b 62%);"></div><div style="padding:3.85rem 4.2rem 3.5rem;"><div class="letter-content-display">${dom.preview.innerHTML}</div></div>`;
     document.body.appendChild(wrap);
 
     const done = () => { document.body.removeChild(wrap); btn.disabled = false; btn.innerHTML = orig; };
     const fail = () => { done(); printToPdf(); };
-    const run = () => html2pdf().set({
-      margin: 0,
-      filename: `Kneuralabs-${currentTypeLabel().replace(/[^\w]+/g, '-')}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
+
+    const PW = 700, PH = 990;
+    const file = `Kneuralabs-${currentTypeLabel().replace(/[^\w]+/g, '-')}.pdf`;
+
+    // Preferred path: capture directly with html2canvas and lay the image at
+    // full A4 width (700px = page width) so it covers the page end to end,
+    // slicing tall content across A4 pages. Falls back to the html2pdf
+    // pipeline (same fixed clone) if the bundle didn't expose its engines.
+    const direct = () => h2c(wrap, { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 700, scrollX: 0, scrollY: 0 })
+      .then((canvas) => {
+        const img = canvas.toDataURL('image/jpeg', 0.98);
+        const imgH = canvas.height * PW / canvas.width;
+        const pdf  = new JsPDF({ unit: 'px', format: [PW, PH], orientation: 'portrait', hotfixes: ['px_scaling'] });
+        let pos = 0, left = imgH;
+        pdf.addImage(img, 'JPEG', 0, 0, PW, imgH);
+        left -= PH;
+        while (left > 0) { pos -= PH; pdf.addPage([PW, PH], 'portrait'); pdf.addImage(img, 'JPEG', 0, pos, PW, imgH); left -= PH; }
+        pdf.save(file);
+        done();
+      });
+
+    const viaHtml2pdf = () => html2pdf().set({
+      margin: 0, filename: file, image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
-      jsPDF: { unit: 'px', format: [700, 990], orientation: 'portrait', hotfixes: ['px_scaling'] }
-    }).from(wrap).save().then(done).catch(fail);
+      jsPDF: { unit: 'px', format: [PW, PH], orientation: 'portrait', hotfixes: ['px_scaling'] }
+    }).from(wrap).save().then(done);
+
+    const run = () => (h2c && JsPDF ? direct() : viaHtml2pdf()).catch(fail);
 
     // Wait for web fonts so text isn't dropped from the canvas.
     (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(run);
